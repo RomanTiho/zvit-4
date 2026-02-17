@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Турніри - FootballHub</title>
+    <meta name="description" content="Перегляньте всі доступні аматорські футбольні турніри та приєднуйтесь до гри">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="tournaments.css">
+    <link rel="stylesheet" href="toast.css">
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-content">
+                <a href="index.html" class="logo">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="2" />
+                        <path d="M16 2C16 2 10 8 10 16C10 24 16 30 16 30" stroke="currentColor" stroke-width="2" />
+                        <path d="M16 2C16 2 22 8 22 16C22 24 16 30 16 30" stroke="currentColor" stroke-width="2" />
+                        <path d="M2 16H30" stroke="currentColor" stroke-width="2" />
+                    </svg>
+                    <span>FootballHub</span>
+                </a>
+                <ul class="nav-links">
+                    <li><a href="index.html">Головна</a></li>
+                    <li><a href="tournaments.html" class="active">Турніри</a></li>
+                    <li><a href="index.html#features">Можливості</a></li>
+                </ul>
+                <button class="btn btn-primary" id="createTournamentBtn">Створити турнір</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1>Турніри</h1>
+            <p>Знайдіть турнір для вашої команди або створіть власний</p>
+        </div>
+    </section>
+
+    <!-- Filters -->
+    <section class="filters-section">
+        <div class="container">
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="statusFilter">Статус</label>
+                    <select id="statusFilter" class="filter-select">
+                        <option value="all">Всі турніри</option>
+                        <option value="upcoming">Майбутні</option>
+                        <option value="ongoing">Поточні</option>
+                        <option value="completed">Завершені</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="formatFilter">Формат</label>
+                    <select id="formatFilter" class="filter-select">
+                        <option value="all">Всі формати</option>
+                        <option value="league">Ліга</option>
+                        <option value="knockout">Плей-офф</option>
+                        <option value="mixed">Змішаний</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="searchInput">Пошук</label>
+                    <input type="text" id="searchInput" class="filter-input" placeholder="Назва турніру...">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tournaments Grid -->
+    <section class="tournaments-section">
+        <div class="container">
+            <div id="tournamentsGrid" class="tournaments-grid">
+                <!-- Tournaments will be dynamically inserted here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Tournament Request Modal -->
+    <div id="createTournamentModal" class="modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Запит на створення турніру</h2>
+                <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.5rem;">Заповніть форму, і наш
+                    менеджер зв'яжеться з вами</p>
+                <button class="modal-close" id="closeModalBtn">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                </button>
+            </div>
+            <form id="createTournamentForm" class="tournament-form">
+                <div class="form-section-title">Ваші контактні дані</div>
+
+                <div class="form-group">
+                    <label for="contactName">Ваше ім'я *</label>
+                    <input type="text" id="contactName" required placeholder="Іван Петренко">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="contactEmail">Email *</label>
+                        <input type="email" id="contactEmail" required placeholder="ivan@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="contactPhone">Телефон *</label>
+                        <input type="tel" id="contactPhone" required placeholder="+380501234567">
+                    </div>
+                </div>
+
+                <div class="form-section-title" style="margin-top: var(--spacing-lg);">Деталі турніру</div>
+
+                <div class="form-group">
+                    <label for="tournamentName">Назва турніру *</label>
+                    <input type="text" id="tournamentName" required placeholder="Наприклад: Літній Кубок 2026">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="startDate">Бажана дата початку *</label>
+                        <input type="date" id="startDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="endDate">Бажана дата завершення *</label>
+                        <input type="date" id="endDate" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="format">Формат *</label>
+                        <select id="format" required>
+                            <option value="">Оберіть формат</option>
+                            <option value="league">Ліга (кожен з кожним)</option>
+                            <option value="knockout">Плей-офф (на вибування)</option>
+                            <option value="mixed">Змішаний (група + плей-офф)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="maxTeams">Очікувана кількість команд *</label>
+                        <input type="number" id="maxTeams" required min="4" max="32" placeholder="8">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="location">Локація *</label>
+                    <input type="text" id="location" required placeholder="Місто або адреса">
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Додаткова інформація</label>
+                    <textarea id="description" rows="4"
+                        placeholder="Розкажіть більше про ваш турнір, особливі вимоги або побажання..."></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelFormBtn">Скасувати</button>
+                    <button type="submit" class="btn btn-primary">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style="margin-right: 0.5rem;">
+                            <path d="M2 10L8 16L18 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                        Надіслати запит
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="logo">
+                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                            <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="2" />
+                            <path d="M16 2C16 2 10 8 10 16C10 24 16 30 16 30" stroke="currentColor" stroke-width="2" />
+                            <path d="M16 2C16 2 22 8 22 16C22 24 16 30 16 30" stroke="currentColor" stroke-width="2" />
+                            <path d="M2 16H30" stroke="currentColor" stroke-width="2" />
+                        </svg>
+                        <span>FootballHub</span>
+                    </div>
+                    <p>Платформа для організації аматорських футбольних турнірів</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Навігація</h4>
+                    <ul>
+                        <li><a href="index.html">Головна</a></li>
+                        <li><a href="tournaments.html">Турніри</a></li>
+                        <li><a href="index.html#features">Можливості</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Контакти</h4>
+                    <ul>
+                        <li><a href="mailto:info@footballhub.com">info@footballhub.com</a></li>
+                        <li><a href="tel:+380123456789">+380 12 345 67 89</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 FootballHub. Всі права захищені.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="toast.js"></script>
+    <script src="app.js"></script>
+    <script src="tournaments.js"></script>
+</body>
+
+</html>

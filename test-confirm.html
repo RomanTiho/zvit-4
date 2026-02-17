@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест Confirm Modal</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="confirm-modal.css">
+</head>
+
+<body style="padding: 2rem;">
+    <h1>Тест Confirm Modal</h1>
+    <p>Натисніть кнопки нижче, щоб перевірити роботу модального вікна:</p>
+
+    <div style="display: flex; gap: 1rem; margin-top: 2rem; flex-direction: column; max-width: 400px;">
+        <button class="btn btn-primary" onclick="test1()">Тест 1: Простий виклик</button>
+        <button class="btn btn-primary" onclick="test2()">Тест 2: З callback</button>
+        <button class="btn btn-primary" onclick="test3()">Тест 3: З українським текстом</button>
+        <button class="btn btn-primary" onclick="test4()">Тест 4: Довгий текст</button>
+    </div>
+
+    <div id="result" style="margin-top: 2rem; padding: 1rem; background: #f0f0f0; border-radius: 8px; display: none;">
+        <h3>Результат:</h3>
+        <p id="resultText"></p>
+    </div>
+
+    <script src="confirm-modal.js"></script>
+    <script>
+        function showResult(text) {
+            document.getElementById('result').style.display = 'block';
+            document.getElementById('resultText').textContent = text;
+        }
+
+        function test1() {
+            console.log('Test 1 started');
+            showConfirm('Це простий тест. Ви підтверджуєте?', () => {
+                showResult('Тест 1: Підтверджено!');
+            }, () => {
+                showResult('Тест 1: Скасовано!');
+            });
+        }
+
+        function test2() {
+            console.log('Test 2 started');
+            showConfirm('Тест з callback функцією', function () {
+                showResult('Тест 2: Callback виконано!');
+            });
+        }
+
+        function test3() {
+            console.log('Test 3 started');
+            showConfirm('Ви впевнені, що хочете видалити цей запит?', () => {
+                showResult('Тест 3: Запит видалено!');
+            });
+        }
+
+        function test4() {
+            console.log('Test 4 started');
+            showConfirm('Очистити старі дані автентифікації з localStorage?\n\nЦе видалить старі записи, які могли залишитися з попередніх версій системи.', () => {
+                showResult('Тест 4: Кеш очищено!');
+            });
+        }
+    </script>
+</body>
+
+</html>

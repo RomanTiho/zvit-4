@@ -1,0 +1,158 @@
+/* Custom Confirmation Modal */
+
+.confirm-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.confirm-modal.active {
+    opacity: 1;
+}
+
+.confirm-modal.hiding {
+    opacity: 0;
+}
+
+.confirm-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+}
+
+.confirm-dialog {
+    position: relative;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    max-width: 480px;
+    width: 90%;
+    padding: 2rem;
+    animation: modalSlideIn 0.3s ease-out;
+    z-index: 1;
+}
+
+.confirm-modal.hiding .confirm-dialog {
+    animation: modalSlideOut 0.3s ease-out;
+}
+
+.confirm-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.confirm-header svg {
+    color: #f59e0b;
+    filter: drop-shadow(0 4px 12px rgba(245, 158, 11, 0.3));
+}
+
+.confirm-body {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.confirm-body h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.75rem;
+}
+
+.confirm-body p {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    white-space: pre-line;
+}
+
+.confirm-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.confirm-actions .btn {
+    min-width: 120px;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.confirm-cancel {
+    background: var(--gray-200);
+    color: var(--text-primary);
+}
+
+.confirm-cancel:hover {
+    background: var(--gray-300);
+}
+
+.confirm-ok {
+    background: var(--gradient-primary);
+    color: white;
+}
+
+.confirm-ok:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(34, 197, 94, 0.4);
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes modalSlideOut {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .confirm-dialog {
+        padding: 1.5rem;
+        max-width: 90%;
+    }
+
+    .confirm-body h3 {
+        font-size: 1.25rem;
+    }
+
+    .confirm-body p {
+        font-size: 0.875rem;
+    }
+
+    .confirm-actions {
+        flex-direction: column;
+    }
+
+    .confirm-actions .btn {
+        width: 100%;
+    }
+}

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Рейтинг Гравців - FootballHub</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="toast.css">
+    <style>
+        .leaderboard-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 var(--spacing-lg);
+        }
+
+        .leaderboard-header {
+            text-align: center;
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .leaderboard-header h1 {
+            font-size: var(--font-size-xxl);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .position-filters {
+            display: flex;
+            gap: var(--spacing-sm);
+            justify-content: center;
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .filter-btn {
+            padding: var(--spacing-sm) var(--spacing-lg);
+            border: 2px solid var(--primary);
+            background: transparent;
+            color: var(--primary);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all var(--transition-speed);
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .players-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: var(--spacing-lg);
+        }
+
+        .player-card {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow);
+            transition: transform var(--transition-speed);
+        }
+
+        .player-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .player-rank {
+            font-size: var(--font-size-xl);
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .player-name {
+            font-size: var(--font-size-lg);
+            font-weight: 600;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .player-position {
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .player-rating {
+            font-size: var(--font-size-xxl);
+            font-weight: 700;
+            color: var(--success);
+            text-align: center;
+            margin: var(--spacing-md) 0;
+        }
+
+        .player-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--spacing-sm);
+            margin-top: var(--spacing-md);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: var(--font-size-lg);
+            font-weight: 600;
+        }
+
+        .stat-label {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+        }
+
+        .loading {
+            text-align: center;
+            padding: var(--spacing-xl);
+            font-size: var(--font-size-lg);
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">⚽ FootballHub</a>
+            <ul class="nav-menu">
+                <li><a href="index.html">Головна</a></li>
+                <li><a href="tournaments.html">Турніри</a></li>
+                <li><a href="players.html" class="active">Рейтинг</a></li>
+                <li><a href="admin.html">Адмін</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="leaderboard-container">
+        <div class="leaderboard-header">
+            <h1>🏆 Рейтинг Гравців</h1>
+            <p>Топ гравців аматорського футболу</p>
+        </div>
+
+        <div class="position-filters">
+            <button class="filter-btn active" data-position="all">Всі</button>
+            <button class="filter-btn" data-position="GK">Воротарі</button>
+            <button class="filter-btn" data-position="DEF">Захисники</button>
+            <button class="filter-btn" data-position="MID">Півзахисники</button>
+            <button class="filter-btn" data-position="FWD">Нападники</button>
+        </div>
+
+        <div id="playersGrid" class="players-grid">
+            <div class="loading">Завантаження...</div>
+        </div>
+    </div>
+
+    <script src="toast.js"></script>
+    <script src="api-client.js"></script>
+    <script>
+        // Поточний фільтр
+        let currentPosition = null;
+
+        // Завантаження гравців
+        async function loadPlayers(position = null) {
+            const grid = document.getElementById('playersGrid');
+            grid.innerHTML = '<div class="loading">Завантаження...</div>';
+
+            try {
+                console.log('Fetching players with position:', position);
+                const response = await PlayersAPI.getLeaderboard(position, 50);
+                console.log('API Response:', response);
+
+                // Django REST Framework повертає paginated response
+                const players = response.results || response;
+                console.log('Players array:', players);
+                console.log('Players count:', players.length);
+
+                displayPlayers(players);
+            } catch (error) {
+                console.error('Error loading players:', error);
+                showToast('Помилка завантаження гравців', 'error');
+                grid.innerHTML = '<div class="loading">Помилка завантаження даних</div>';
+            }
+        }
+
+        // Відображення гравців
+        function displayPlayers(players) {
+            const grid = document.getElementById('playersGrid');
+
+            if (!players || players.length === 0) {
+                grid.innerHTML = '<div class="loading">Гравців не знайдено</div>';
+                return;
+            }
+
+            grid.innerHTML = players.map((player, index) => `
+                <div class="player-card">
+                    <div class="player-rank">#${index + 1}</div>
+                    <div class="player-name">${player.username}</div>
+                    <div class="player-position">${getPositionName(player.position)}</div>
+                    <div class="player-rating">${player.overall_rating}</div>
+                    <div class="player-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">${player.matches_played}</div>
+                            <div class="stat-label">Матчів</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${player.recent_stats?.length || 0}</div>
+                            <div class="stat-label">Останніх</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Назва позиції
+        function getPositionName(position) {
+            const positions = {
+                'GK': 'Воротар',
+                'DEF': 'Захисник',
+                'MID': 'Півзахисник',
+                'FWD': 'Нападник'
+            };
+            return positions[position] || position;
+        }
+
+        // Фільтри
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Оновити активну кнопку
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // Завантажити гравців
+                const position = btn.dataset.position;
+                currentPosition = position === 'all' ? null : position;
+                loadPlayers(currentPosition);
+            });
+        });
+
+        // Завантажити при старті
+        loadPlayers();
+    </script>
+</body>
+
+</html>

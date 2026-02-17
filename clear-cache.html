@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Очищення кешу - FootballHub</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        .success {
+            color: #10b981;
+            font-weight: 600;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .info {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            margin-top: 20px;
+            text-align: left;
+            border-radius: 4px;
+        }
+
+        .info strong {
+            color: #1e40af;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🧹 Очищення кешу</h1>
+        <p>Натисніть кнопку нижче, щоб видалити старі дані автентифікації адміністратора з localStorage та
+            sessionStorage.</p>
+
+        <button onclick="clearCache()">Очистити кеш</button>
+
+        <div class="success" id="successMessage">
+            ✅ Кеш успішно очищено!
+        </div>
+
+        <div class="info">
+            <strong>Після очищення:</strong><br>
+            1. Закрийте всі вкладки з FootballHub<br>
+            2. Натисніть Ctrl+Shift+R для жорсткого оновлення<br>
+            3. Відкрийте admin.html та увійдіть знову<br>
+            4. Відкрийте tournaments.html в новій вкладці<br>
+            5. Оновіть сторінку - адмін-права не повинні з'явитися
+        </div>
+    </div>
+
+    <script>
+        function clearCache() {
+            // Clear from localStorage
+            localStorage.removeItem('footballhub_admin_auth');
+
+            // Clear from sessionStorage
+            sessionStorage.removeItem('footballhub_admin_auth');
+
+            // Show success message
+            document.getElementById('successMessage').style.display = 'block';
+
+            console.log('Cleared admin auth from both localStorage and sessionStorage');
+
+            // Optional: Clear all localStorage and sessionStorage
+            // localStorage.clear();
+            // sessionStorage.clear();
+        }
+    </script>
+</body>
+
+</html>

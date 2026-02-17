@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Адмін-панель - FootballHub</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="tournaments.css">
+    <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="toast.css">
+    <link rel="stylesheet" href="confirm-modal.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="adminNavbar">
+        <div class="container">
+            <div class="nav-content">
+                <a href="admin.html" class="logo">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="2" />
+                        <path d="M16 2C16 2 10 8 10 16C10 24 16 30 16 30" stroke="currentColor" stroke-width="2" />
+                        <path d="M16 2C16 2 22 8 22 16C22 24 16 30 16 30" stroke="currentColor" stroke-width="2" />
+                        <path d="M2 16H30" stroke="currentColor" stroke-width="2" />
+                    </svg>
+                    <span>FootballHub Admin</span>
+                </a>
+                <div class="nav-links">
+                    <a href="admin.html" class="active">Адмін-панель</a>
+                    <a href="index.html" target="_blank" title="Відкрити в новій вкладці">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"
+                            style="margin-right: 0.25rem; vertical-align: middle;">
+                            <path
+                                d="M10 2H12V4M12 2L7 7M5 2H3C2.5 2 2 2.5 2 3V11C2 11.5 2.5 12 3 12H11C11.5 12 12 11.5 12 11V9"
+                                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                        </svg>
+                        Головна сайту
+                    </a>
+                    <a href="tournaments.html" target="_blank" title="Відкрити в новій вкладці">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"
+                            style="margin-right: 0.25rem; vertical-align: middle;">
+                            <path
+                                d="M10 2H12V4M12 2L7 7M5 2H3C2.5 2 2 2.5 2 3V11C2 11.5 2.5 12 3 12H11C11.5 12 12 11.5 12 11V9"
+                                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                        </svg>
+                        Турніри сайту
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Login Section (shown when not authenticated) -->
+    <section id="loginSection" class="admin-login-section"
+        style="position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; display: flex !important; align-items: center !important; justify-content: center !important; margin: 0 !important; padding: 2rem !important;">
+        <div class="admin-login-card">
+            <div class="admin-login-header">
+                <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                    <circle cx="32" cy="32" r="30" stroke="url(#gradient)" stroke-width="3" />
+                    <path d="M32 20C27 20 23 24 23 29C23 34 27 38 32 38C37 38 41 34 41 29C41 24 37 20 32 20Z"
+                        fill="url(#gradient)" />
+                    <path d="M20 48C20 42 25 37 32 37C39 37 44 42 44 48" stroke="url(#gradient)" stroke-width="3"
+                        stroke-linecap="round" />
+                    <defs>
+                        <linearGradient id="gradient" x1="0" y1="0" x2="64" y2="64">
+                            <stop offset="0%" stop-color="#667eea" />
+                            <stop offset="100%" stop-color="#764ba2" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <h1>Вхід до адмін-панелі</h1>
+                <p>Введіть пароль для доступу до управління турнірами</p>
+            </div>
+            <form id="loginForm" class="admin-login-form">
+                <div class="form-group">
+                    <label for="adminPassword">Пароль</label>
+                    <input type="password" id="adminPassword" class="form-control"
+                        placeholder="Введіть пароль адміністратора" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M10 3C6 3 3 6 3 10C3 14 6 17 10 17C14 17 17 14 17 10C17 6 14 3 10 3Z"
+                            stroke="currentColor" stroke-width="2" />
+                        <path d="M10 7V10L12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                    Увійти
+                </button>
+                <p class="admin-hint">Пароль за замовчуванням: <code>admin123</code></p>
+            </form>
+        </div>
+    </section>
+
+    <!-- Admin Panel (shown when authenticated) -->
+    <section id="adminPanel" class="admin-panel-section" style="display: none;">
+        <div class="container">
+            <!-- Welcome Message -->
+            <div id="welcomeMessage" class="welcome-message" style="display: none;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                    <path d="M8 12L11 15L16 9" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </svg>
+                <span>Успішний вхід! Ласкаво просимо до адмін-панелі.</span>
+            </div>
+
+            <div class="admin-header">
+                <div>
+                    <h1>Панель адміністратора</h1>
+                    <p>Управління турнірами та запитами користувачів</p>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button id="clearCacheBtn" class="btn btn-secondary">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M3 5H17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                            <path d="M7 5V4C7 3 8 2 9 2H11C12 2 13 3 13 4V5" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" />
+                            <path d="M4 5L5 16C5 17 6 18 7 18H13C14 18 15 17 15 16L16 5" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        Очистити кеш
+                    </button>
+                    <button id="logoutBtn" class="btn btn-secondary">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M8 17H4C3.5 17 3 16.5 3 16V4C3 3.5 3.5 3 4 3H8" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" />
+                            <path d="M13 13L17 10L13 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                            <path d="M17 10H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                        Вийти
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="admin-tabs">
+                <button class="admin-tab active" data-tab="requests">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <rect x="3" y="4" width="14" height="13" rx="2" stroke="currentColor" stroke-width="2" />
+                        <path d="M7 8H13M7 12H10" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                    Запити користувачів
+                    <span id="requestsCount" class="badge">0</span>
+                </button>
+                <button class="admin-tab" data-tab="create">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="2" />
+                        <path d="M10 7V13M7 10H13" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                    Створити турнір
+                </button>
+                <button class="admin-tab" data-tab="tournaments">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M10 2L12 8H18L13 12L15 18L10 14L5 18L7 12L2 8H8L10 2Z" stroke="currentColor"
+                            stroke-width="2" stroke-linejoin="round" />
+                    </svg>
+                    Всі турніри
+                </button>
+            </div>
+
+            <!-- Tab Content: Requests -->
+            <div id="requestsTab" class="admin-tab-content active">
+                <div class="admin-section-header">
+                    <h2>Запити на створення турнірів</h2>
+                    <p>Перегляньте та обробіть запити від користувачів</p>
+                </div>
+                <div id="requestsList" class="requests-list">
+                    <!-- Requests will be rendered here -->
+                </div>
+            </div>
+
+            <!-- Tab Content: Create Tournament -->
+            <div id="createTab" class="admin-tab-content">
+                <div class="admin-section-header">
+                    <h2>Створити новий турнір</h2>
+                    <p>Заповніть форму для створення турніру</p>
+                </div>
+                <form id="adminCreateTournamentForm" class="admin-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="adminTournamentName">Назва турніру *</label>
+                            <input type="text" id="adminTournamentName" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="adminLocation">Локація *</label>
+                            <input type="text" id="adminLocation" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="adminStartDate">Дата початку *</label>
+                            <input type="date" id="adminStartDate" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="adminEndDate">Дата завершення *</label>
+                            <input type="date" id="adminEndDate" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="adminFormat">Формат турніру *</label>
+                            <select id="adminFormat" class="form-control" required>
+                                <option value="league">Лігова система</option>
+                                <option value="knockout">Плей-офф</option>
+                                <option value="mixed">Змішаний формат</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="adminMaxTeams">Максимум команд *</label>
+                            <input type="number" id="adminMaxTeams" class="form-control" min="2" max="32" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="adminDescription">Опис турніру *</label>
+                        <textarea id="adminDescription" class="form-control" rows="4" required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="2" />
+                            <path d="M10 7V13M7 10H13" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                        Створити турнір
+                    </button>
+                </form>
+            </div>
+
+            <!-- Tab Content: All Tournaments -->
+            <div id="tournamentsTab" class="admin-tab-content">
+                <div class="admin-section-header">
+                    <h2>Всі турніри</h2>
+                    <p>Перегляд та управління існуючими турнірами</p>
+                </div>
+                <div id="adminTournamentsList" class="admin-tournaments-list">
+                    <!-- Tournaments will be rendered here -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="toast.js"></script>
+    <script src="confirm-modal.js"></script>
+    <script src="app.js"></script>
+    <script src="admin.js"></script>
+</body>
+
+</html>
