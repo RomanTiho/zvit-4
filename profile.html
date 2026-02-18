@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мій Профіль - FootballHub</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="toast.css">
+    <style>
+        .profile-container {
+            max-width: 1000px;
+            margin: 6rem auto 2rem;
+            padding: 0 var(--spacing-lg);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .profile-container.loaded {
+            opacity: 1;
+        }
+
+        .loading-spinner {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 1000;
+        }
+
+        .loading-spinner.hidden {
+            display: none;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--gray-200);
+            border-top: 4px solid var(--primary-500);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto var(--spacing-md);
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loading-spinner p {
+            color: var(--dark-600);
+            font-weight: 600;
+        }
+
+        .profile-header {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-xl);
+            margin-bottom: var(--spacing-xl);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 2px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all var(--transition-base);
+        }
+
+        .profile-header:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+            border-color: var(--primary-200);
+        }
+
+        .profile-info h1 {
+            margin: 0 0 var(--spacing-md) 0;
+            color: var(--dark-900);
+            font-size: var(--font-size-3xl);
+            font-weight: 800;
+        }
+
+        .profile-meta {
+            display: flex;
+            gap: var(--spacing-xl);
+            margin-top: var(--spacing-md);
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+            padding: var(--spacing-md);
+            background: var(--gray-50);
+            border-radius: var(--radius-lg);
+            min-width: 100px;
+        }
+
+        .meta-label {
+            font-size: var(--font-size-xs);
+            color: var(--dark-600);
+            margin-bottom: var(--spacing-xs);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .meta-value {
+            font-size: var(--font-size-2xl);
+            font-weight: 800;
+            color: var(--primary-500);
+        }
+
+        .profile-actions {
+            display: flex;
+            gap: var(--spacing-md);
+        }
+
+        .btn {
+            padding: var(--spacing-md) var(--spacing-xl);
+            border: 2px solid transparent;
+            border-radius: var(--radius-lg);
+            font-size: var(--font-size-md);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-base);
+        }
+
+        .btn-primary {
+            background: var(--primary-500);
+            color: var(--white);
+            border-color: var(--primary-500);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-600);
+            border-color: var(--primary-600);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--white);
+            color: var(--dark-700);
+            border-color: var(--gray-300);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-100);
+            border-color: var(--dark-700);
+            transform: translateY(-2px);
+        }
+
+        .profile-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-xl);
+        }
+
+        .profile-card {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-xl);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 2px solid var(--gray-200);
+            transition: all var(--transition-base);
+        }
+
+        .profile-card:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+            border-color: var(--primary-200);
+        }
+
+        .profile-card h2 {
+            margin: 0 0 var(--spacing-lg) 0;
+            color: var(--dark-900);
+            font-size: var(--font-size-xl);
+            font-weight: 700;
+            padding-bottom: var(--spacing-md);
+            border-bottom: 2px solid var(--gray-200);
+        }
+
+        .form-group {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: var(--spacing-sm);
+            font-weight: 600;
+            color: var(--dark-700);
+            font-size: var(--font-size-sm);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group p {
+            padding: var(--spacing-md);
+            background: var(--gray-50);
+            border-radius: var(--radius-md);
+            color: var(--dark-900);
+            font-size: var(--font-size-md);
+            margin: 0;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: var(--spacing-md);
+            border: 2px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-md);
+            transition: all var(--transition-base);
+            background: var(--white);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-500);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-group input:disabled {
+            background: var(--gray-100);
+            cursor: not-allowed;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--spacing-md);
+        }
+
+        .stat-card {
+            background: var(--gray-50);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            text-align: center;
+            border: 2px solid var(--gray-200);
+            transition: all var(--transition-base);
+        }
+
+        .stat-card:hover {
+            background: var(--white);
+            border-color: var(--primary-300);
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-value {
+            font-size: var(--font-size-4xl);
+            font-weight: 800;
+            color: var(--primary-500);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .stat-label {
+            font-size: var(--font-size-sm);
+            color: var(--dark-600);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .edit-mode {
+            display: none;
+        }
+
+        .edit-mode.active {
+            display: block;
+        }
+
+        .view-mode.hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .profile-content {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .profile-meta {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .profile-actions {
+                margin-top: var(--spacing-md);
+                width: 100%;
+            }
+
+            .profile-actions .btn {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-content">
+                <a href="index.html" class="logo">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="2" />
+                        <path d="M16 2C16 2 10 8 10 16C10 24 16 30 16 30" stroke="currentColor" stroke-width="2" />
+                        <path d="M16 2C16 2 22 8 22 16C22 24 16 30 16 30" stroke="currentColor" stroke-width="2" />
+                        <path d="M2 16H30" stroke="currentColor" stroke-width="2" />
+                    </svg>
+                    <span>FootballHub</span>
+                </a>
+                <ul class="nav-links">
+                    <li><a href="index.html">Головна</a></li>
+                    <li><a href="tournaments.html">Турніри</a></li>
+                    <li><a href="players.html">Рейтинг</a></li>
+                    <li><a href="profile.html" class="active">Профіль</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" id="loadingSpinner">
+        <div class="spinner"></div>
+        <p>Завантаження профілю...</p>
+    </div>
+
+    <div class="profile-container">
+        <div class="profile-header">
+            <div class="profile-info">
+                <h1 id="profileName">Завантаження...</h1>
+                <div class="profile-meta">
+                    <div class="meta-item">
+                        <span class="meta-label">Позиція</span>
+                        <span class="meta-value" id="profilePosition">-</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Рейтинг</span>
+                        <span class="meta-value" id="profileRating">0.00</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Матчів</span>
+                        <span class="meta-value" id="profileMatches">0</span>
+                    </div>
+                </div>
+            </div>
+            <div class="profile-actions">
+                <button class="btn btn-primary" id="editBtn">Редагувати</button>
+                <button class="btn btn-secondary" id="logoutBtn">Вийти</button>
+            </div>
+        </div>
+
+        <div class="profile-content">
+            <!-- Profile Details -->
+            <div class="profile-card">
+                <h2>Особиста інформація</h2>
+
+                <div class="view-mode" id="viewMode">
+                    <div class="form-group">
+                        <label>Ім'я користувача</label>
+                        <p id="viewUsername">-</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <p id="viewEmail">-</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Ім'я</label>
+                        <p id="viewFirstName">-</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Прізвище</label>
+                        <p id="viewLastName">-</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Ігровий номер</label>
+                        <p id="viewJerseyNumber">-</p>
+                    </div>
+                </div>
+
+                <form class="edit-mode" id="editMode">
+                    <div class="form-group">
+                        <label>Ім'я користувача</label>
+                        <input type="text" id="editUsername" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="editEmail">
+                    </div>
+                    <div class="form-group">
+                        <label>Ім'я</label>
+                        <input type="text" id="editFirstName">
+                    </div>
+                    <div class="form-group">
+                        <label>Прізвище</label>
+                        <input type="text" id="editLastName">
+                    </div>
+                    <div class="form-group">
+                        <label>Позиція</label>
+                        <select id="editPosition">
+                            <option value="GK">Воротар</option>
+                            <option value="DEF">Захисник</option>
+                            <option value="MID">Півзахисник</option>
+                            <option value="FWD">Нападник</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Ігровий номер (1-99)</label>
+                        <input type="number" id="editJerseyNumber" min="1" max="99" placeholder="Наприклад: 10">
+                    </div>
+                    <div style="display: flex; gap: var(--spacing-md);">
+                        <button type="submit" class="btn btn-primary">Зберегти</button>
+                        <button type="button" class="btn btn-secondary" id="cancelBtn">Скасувати</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Player Stats -->
+            <div class="profile-card">
+                <h2>Статистика</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="statGoals">0</div>
+                        <div class="stat-label">Голи</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statAssists">0</div>
+                        <div class="stat-label">Асисти</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statYellow">0</div>
+                        <div class="stat-label">Жовті картки</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statRed">0</div>
+                        <div class="stat-label">Червоні картки</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="toast.js"></script>
+    <script src="api-client.js"></script>
+    <script>
+        let currentUser = null;
+
+        // Position names
+        const positionNames = {
+            'GK': 'Воротар',
+            'DEF': 'Захисник',
+            'MID': 'Півзахисник',
+            'FWD': 'Нападник'
+        };
+
+        // Check authentication and load profile
+        async function checkAuthAndLoadProfile() {
+            console.log('🔍 [Profile] Checking authentication...');
+            const token = localStorage.getItem('access_token');
+
+            if (!token) {
+                console.log('❌ [Profile] No token found');
+                window.location.href = 'auth.html';
+                return;
+            }
+
+            console.log('✅ [Profile] Token found');
+
+            try {
+                console.log('📡 [Profile] Calling /api/auth/me/...');
+                const response = await fetch('http://localhost:8001/api/auth/me/', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                console.log('📡 [Profile] Response status:', response.status);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('❌ [Profile] API Error:', response.status, errorText);
+                    throw new Error(`Invalid token: ${response.status}`);
+                }
+
+                currentUser = await response.json();
+                console.log('✅ [Profile] User loaded:', currentUser.username);
+                displayProfile(currentUser);
+
+                if (currentUser.player) {
+                    loadPlayerStats(currentUser.player.id);
+                }
+
+                // Показати профіль після успішної перевірки
+                console.log('✨ [Profile] Showing profile');
+                document.querySelector('.profile-container').classList.add('loaded');
+                document.getElementById('loadingSpinner').classList.add('hidden');
+
+            } catch (error) {
+                console.error('❌ [Profile] Error:', error);
+
+                // Зберегти помилку для діагностики
+                sessionStorage.setItem('profile_error', JSON.stringify({
+                    message: error.message,
+                    timestamp: new Date().toISOString()
+                }));
+
+                console.log('🗑️ [Profile] Removing tokens');
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('refresh_token');
+                console.log('🔄 [Profile] Redirecting to auth.html');
+
+                // Затримка щоб побачити логи
+                setTimeout(() => {
+                    window.location.href = 'auth.html';
+                }, 100);
+            }
+        }
+
+        // Display profile
+        function displayProfile(user) {
+            // Показати повне ім'я або username якщо ім'я не вказано
+            const fullName = user.first_name && user.last_name
+                ? `${user.first_name} ${user.last_name}`
+                : user.username;
+            document.getElementById('profileName').textContent = fullName;
+
+            if (user.player) {
+                document.getElementById('profilePosition').textContent =
+                    positionNames[user.player.position] || 'Не вказано';
+                document.getElementById('profileRating').textContent =
+                    user.player.overall_rating.toFixed(2);
+                document.getElementById('profileMatches').textContent =
+                    user.player.matches_played;
+            } else {
+                document.getElementById('profilePosition').textContent = 'Не вказано';
+                document.getElementById('profileRating').textContent = '0.00';
+                document.getElementById('profileMatches').textContent = '0';
+            }
+
+            // View mode
+            document.getElementById('viewUsername').textContent = user.username;
+            document.getElementById('viewEmail').textContent = user.email || 'Не вказано';
+            document.getElementById('viewFirstName').textContent = user.first_name || 'Не вказано';
+            document.getElementById('viewLastName').textContent = user.last_name || 'Не вказано';
+            document.getElementById('viewJerseyNumber').textContent =
+                user.player?.jersey_number ? `№ ${user.player.jersey_number}` : 'Не вказано';
+
+            // Edit mode
+            document.getElementById('editUsername').value = user.username;
+            document.getElementById('editEmail').value = user.email || '';
+            document.getElementById('editFirstName').value = user.first_name || '';
+            document.getElementById('editLastName').value = user.last_name || '';
+            if (user.player) {
+                document.getElementById('editPosition').value = user.player.position;
+                document.getElementById('editJerseyNumber').value = user.player.jersey_number || '';
+            }
+        }
+
+        // Load player stats
+        async function loadPlayerStats(playerId) {
+            try {
+                const response = await fetch(
+                    `http://localhost:8001/api/player-stats/?player_id=${playerId}`
+                );
+
+                if (!response.ok) return;
+
+                const data = await response.json();
+                const stats = data.results || data;
+
+                // Calculate totals
+                const totals = stats.reduce((acc, stat) => ({
+                    goals: acc.goals + stat.goals,
+                    assists: acc.assists + stat.assists,
+                    yellow_cards: acc.yellow_cards + stat.yellow_cards,
+                    red_cards: acc.red_cards + stat.red_cards
+                }), { goals: 0, assists: 0, yellow_cards: 0, red_cards: 0 });
+
+                document.getElementById('statGoals').textContent = totals.goals;
+                document.getElementById('statAssists').textContent = totals.assists;
+                document.getElementById('statYellow').textContent = totals.yellow_cards;
+                document.getElementById('statRed').textContent = totals.red_cards;
+
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        // Edit mode
+        document.getElementById('editBtn').addEventListener('click', () => {
+            document.getElementById('viewMode').classList.add('hidden');
+            document.getElementById('editMode').classList.add('active');
+        });
+
+        document.getElementById('cancelBtn').addEventListener('click', () => {
+            document.getElementById('viewMode').classList.remove('hidden');
+            document.getElementById('editMode').classList.remove('active');
+        });
+
+        // Update profile
+        document.getElementById('editMode').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const jerseyNumber = document.getElementById('editJerseyNumber').value;
+            const data = {
+                email: document.getElementById('editEmail').value,
+                first_name: document.getElementById('editFirstName').value,
+                last_name: document.getElementById('editLastName').value,
+                position: document.getElementById('editPosition').value,
+                jersey_number: jerseyNumber ? parseInt(jerseyNumber) : null
+            };
+
+            try {
+                const response = await fetch('http://localhost:8001/api/auth/update_profile/', {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to update profile');
+                }
+
+                const updatedUser = await response.json();
+                currentUser = updatedUser;
+                displayProfile(updatedUser);
+
+                document.getElementById('viewMode').classList.remove('hidden');
+                document.getElementById('editMode').classList.remove('active');
+
+                showToast('Профіль оновлено!', 'success');
+
+            } catch (error) {
+                console.error('Error updating profile:', error);
+                showToast('Помилка оновлення профілю', 'error');
+            }
+        });
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            const refreshToken = localStorage.getItem('refresh_token');
+
+            try {
+                await fetch('http://localhost:8001/api/auth/logout/', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ refresh: refreshToken })
+                });
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            showToast('Ви вийшли з системи', 'success');
+
+            setTimeout(() => {
+                window.location.href = 'auth.html';
+            }, 1000);
+        });
+
+        // Load profile on page load
+        checkAuthAndLoadProfile();
+    </script>
+</body>
+
+</html>

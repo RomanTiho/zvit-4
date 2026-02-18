@@ -1,16 +1,111 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth.models import User
 from django.db.models import Q
 from .models import Player, PlayerStats
 from .serializers import (
     PlayerSerializer, 
     PlayerDetailSerializer,
     PlayerStatsSerializer,
-    PlayerRatingHistorySerializer
+    PlayerRatingHistorySerializer,
+    UserRegisterSerializer,
+    UserProfileSerializer,
+    UserUpdateSerializer
 )
 from .services import PlayerRatingService
+
+
+class AuthViewSet(viewsets.ViewSet):
+    """ViewSet для авторизації та реєстрації"""
+    
+    @action(detail=False, methods=['post'], permission_classes=[AllowAny])
+    def register(self, request):
+        """Реєстрація нового користувача"""
+        serializer = UserRegisterSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            user = serializer.save()
+            
+            # Створити JWT токени
+            refresh = RefreshToken.for_user(user)
+            
+            return Response({
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                },
+                'tokens': {
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
+                }
+            }, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def me(self, request):
+        """Отримати поточного користувача"""
+        serializer = UserProfileSerializer(request.user)
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['put', 'patch'], permission_classes=[IsAuthenticated])
+    def update_profile(self, request):
+        """Оновити профіль користувача"""
+        serializer = UserUpdateSerializer(request.user, data=request.data, partial=True)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(UserProfileSerializer(request.user).data)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
+    def logout(self, request):
+        """Вихід з системи (blacklist refresh token)"""
+        try:
+            refresh_token = request.data.get('refresh')
+            if refresh_token:
+                token = RefreshToken(refresh_token)
+                token.blacklist()
+            return Response({'message': 'Successfully logged out'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ProfileViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet для публічних профілів"""
+    queryset = User.objects.all()
+    serializer_class = UserProfileSerializer
+    permission_classes = [AllowAny]
+    
+    @action(detail=True, methods=['get'])
+    def stats(self, request, pk=None):
+        """Отримати статистику гравця"""
+        user = self.get_object()
+        
+        try:
+            player = user.player
+            stats = PlayerRatingService.get_player_statistics(player)
+            
+            return Response({
+                'player_id': player.id,
+                'position': player.position,
+                'overall_rating': float(player.overall_rating),
+                'matches_played': player.matches_played,
+                'statistics': stats
+            })
+        except Player.DoesNotExist:
+            return Response(
+                {'error': 'Player profile not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
 
 class PlayerViewSet(viewsets.ModelViewSet):
@@ -31,7 +126,7 @@ class PlayerViewSet(viewsets.ModelViewSet):
         serializer = PlayerRatingHistorySerializer(history, many=True)
         return Response(serializer.data)
     
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def update_stats(self, request, pk=None):
         """Оновити статистику після матчу"""
         player = self.get_object()

@@ -245,6 +245,18 @@ button {
     transform: translateY(-2px);
 }
 
+.btn-outline {
+    background: transparent;
+    color: var(--dark-700);
+    border: 2px solid var(--gray-300);
+}
+
+.btn-outline:hover {
+    background: var(--gray-100);
+    border-color: var(--dark-700);
+    transform: translateY(-2px);
+}
+
 .btn-large {
     padding: 0.875rem 2rem;
     font-size: var(--font-size-lg);
