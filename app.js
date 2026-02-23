@@ -1,4 +1,5 @@
 // ===== Global State Management =====
+const DATA_VERSION = 3; // bump this to force localStorage reset
 const AppState = {
     tournaments: [],
     currentTournament: null,
@@ -20,8 +21,9 @@ const Storage = {
 
 // ===== Initialize Sample Data =====
 function initializeSampleData() {
+    const storedVersion = Storage.load('dataVersion');
     const existingData = Storage.load('tournaments');
-    if (!existingData || existingData.length === 0) {
+    if (!existingData || existingData.length === 0 || storedVersion !== DATA_VERSION) {
         const sampleTournaments = [
             {
                 id: 1,
@@ -34,12 +36,12 @@ function initializeSampleData() {
                 description: 'Запрошуємо всіх любителів футболу взяти участь у нашому літньому турнірі! Це чудова можливість показати свої навички.',
                 status: 'upcoming',
                 teams: [
-                    { id: 1, name: 'Динамо', captain: 'Іван Петренко', email: 'ivan@example.com', phone: '+380501234567', players: 11 },
-                    { id: 2, name: 'Шахтар', captain: 'Петро Іваненко', email: 'petro@example.com', phone: '+380501234568', players: 11 },
-                    { id: 3, name: 'Зоря', captain: 'Олег Сидоренко', email: 'oleg@example.com', phone: '+380501234569', players: 11 },
-                    { id: 4, name: 'Ворскла', captain: 'Андрій Коваленко', email: 'andriy@example.com', phone: '+380501234570', players: 11 },
-                    { id: 5, name: 'Олімпік', captain: 'Сергій Мельник', email: 'sergiy@example.com', phone: '+380501234571', players: 11 },
-                    { id: 6, name: 'Колос', captain: 'Максим Бондаренко', email: 'maxim@example.com', phone: '+380501234572', players: 11 }
+                    { id: 1, name: 'Динамо', captain: 'Буяльський Віктор', email: 'dynamo@example.com', phone: '+380501234567', players: 11, playerRoster: ['Бущан Георгій', 'Кендзьора Томаш', 'Забарний Іллі', 'Сирота Тімур', 'Міхайліченко Владислав', 'Гармаш Денис', 'Буяльський Віктор', 'Шапаренко Микола', 'Циганков Віктор', 'Ваньят Владислав', 'Де Пена Карлос'] },
+                    { id: 2, name: 'Шахтар', captain: 'Степаненко Тарас', email: 'shakhtar@example.com', phone: '+380501234568', players: 11, playerRoster: ['Трубін Анатолій', 'Конопля Юхим', 'Матвієнко Микола', 'Бондар Валерій', 'Залізняк Іван', 'Степаненко Тарас', 'Судаков Георгій', 'Малиновський Руслан', 'Коноплянка Євген', 'Мудрик Михайло', 'Алан Патрік'] },
+                    { id: 3, name: 'Зоря', captain: 'Позига Андрій', email: 'zorya@example.com', phone: '+380501234569', players: 11, playerRoster: ['Шевченко Вадим', 'Назаренко Руслан', 'Бабогло Андрій', 'Рассо Вілья', 'Чайковський Артем', 'Позига Андрій', 'Гречишкін Юрій', 'Очігава Олег', 'Андрієвський Богдан', 'Русін Владислав', 'Штурко Максим'] },
+                    { id: 4, name: 'Ворскла', captain: 'Безсмертний Олексій', email: 'vorskla@example.com', phone: '+380501234570', players: 11, playerRoster: ['Педяш Веніамін', 'Перебийніс Дмитро', 'Чеснаков Олексій', 'Пузаненко Сергій', 'Кулач Вячеслав', 'Романюк Вадим', 'Безсмертний Олексій', 'Давиденко Вадим', 'Бобаль Дмитро', 'Закусило Олексій', 'Гавриш Вадим'] },
+                    { id: 5, name: 'Олімпік', captain: 'Яценко Олег', email: 'olimpik@example.com', phone: '+380501234571', players: 11, playerRoster: ['Рибка Максим', 'Горішний Євген', 'Баланюк Ігор', 'Лебеденко Дмитро', 'Петряк Владислав', 'Гоменюк Олег', 'Яценко Олег', 'Романчук Сергій', 'Тотовицький Олег', 'Білик Олексій', 'Коваль Денис'] },
+                    { id: 6, name: 'Колос', captain: 'Тростяний Ростислав', email: 'kolos@example.com', phone: '+380501234572', players: 11, playerRoster: ['Пасічник Богдан', 'Коркішко Вячеслав', 'Шаблій Іван', 'Малик Олексій', 'Атіла', 'Тростяний Ростислав', 'Пайчадзе Шота', 'Гітченко Вадим', 'Будківський Артем', 'Кочергін Сергій', 'Безборідько Олег'] }
                 ],
                 standings: [],
                 matches: []
@@ -69,12 +71,12 @@ function initializeSampleData() {
                 description: 'Літній турнір 2025 року пройшов з великим успіхом! Команда Динамо стала переможцем.',
                 status: 'completed',
                 teams: [
-                    { id: 1, name: 'Динамо', captain: 'Іван Петренко', email: 'ivan@example.com', phone: '+380501234567', players: 11 },
-                    { id: 2, name: 'Шахтар', captain: 'Петро Іваненко', email: 'petro@example.com', phone: '+380501234568', players: 11 },
-                    { id: 3, name: 'Зоря', captain: 'Олег Сидоренко', email: 'oleg@example.com', phone: '+380501234569', players: 11 },
-                    { id: 4, name: 'Ворскла', captain: 'Андрій Коваленко', email: 'andriy@example.com', phone: '+380501234570', players: 11 },
-                    { id: 5, name: 'Олімпік', captain: 'Сергій Мельник', email: 'sergiy@example.com', phone: '+380501234571', players: 11 },
-                    { id: 6, name: 'Колос', captain: 'Максим Бондаренко', email: 'maxim@example.com', phone: '+380501234572', players: 11 }
+                    { id: 1, name: 'Динамо', captain: 'Буяльський Віктор', email: 'dynamo@example.com', phone: '+380501234567', players: 11, playerRoster: ['Бущан Георгій', 'Кендзьора Томаш', 'Забарний Іллі', 'Сирота Тімур', 'Міхайліченко Владислав', 'Гармаш Денис', 'Буяльський Віктор', 'Шапаренко Микола', 'Циганков Віктор', 'Ваньят Владислав', 'Де Пена Карлос'] },
+                    { id: 2, name: 'Шахтар', captain: 'Степаненко Тарас', email: 'shakhtar@example.com', phone: '+380501234568', players: 11, playerRoster: ['Трубін Анатолій', 'Конопля Юхим', 'Матвієнко Микола', 'Бондар Валерій', 'Залізняк Іван', 'Степаненко Тарас', 'Судаков Георгій', 'Малиновський Руслан', 'Коноплянка Євген', 'Мудрик Михайло', 'Алан Патрік'] },
+                    { id: 3, name: 'Зоря', captain: 'Позига Андрій', email: 'zorya@example.com', phone: '+380501234569', players: 11, playerRoster: ['Шевченко Вадим', 'Назаренко Руслан', 'Бабогло Андрій', 'Рассо Вілья', 'Чайковський Артем', 'Позига Андрій', 'Гречишкін Юрій', 'Очігава Олег', 'Андрієвський Богдан', 'Русін Владислав', 'Штурко Максим'] },
+                    { id: 4, name: 'Ворскла', captain: 'Безсмертний Олексій', email: 'vorskla@example.com', phone: '+380501234570', players: 11, playerRoster: ['Педяш Веніамін', 'Перебийніс Дмитро', 'Чеснаков Олексій', 'Пузаненко Сергій', 'Кулач Вячеслав', 'Романюк Вадим', 'Безсмертний Олексій', 'Давиденко Вадим', 'Бобаль Дмитро', 'Закусило Олексій', 'Гавриш Вадим'] },
+                    { id: 5, name: 'Олімпік', captain: 'Яценко Олег', email: 'olimpik@example.com', phone: '+380501234571', players: 11, playerRoster: ['Рибка Максим', 'Горішний Євген', 'Баланюк Ігор', 'Лебеденко Дмитро', 'Петряк Владислав', 'Гоменюк Олег', 'Яценко Олег', 'Романчук Сергій', 'Тотовицький Олег', 'Білик Олексій', 'Коваль Денис'] },
+                    { id: 6, name: 'Колос', captain: 'Тростяний Ростислав', email: 'kolos@example.com', phone: '+380501234572', players: 11, playerRoster: ['Пасічник Богдан', 'Коркішко Вячеслав', 'Шаблій Іван', 'Малик Олексій', 'Атіла', 'Тростяний Ростислав', 'Пайчадзе Шота', 'Гітченко Вадим', 'Будківський Артем', 'Кочергін Сергій', 'Безборідько Олег'] }
                 ],
                 standings: [
                     { teamId: 1, teamName: 'Динамо', played: 5, won: 4, drawn: 1, lost: 0, goalsFor: 12, goalsAgainst: 3, points: 13 },
@@ -104,12 +106,12 @@ function initializeSampleData() {
                 description: 'Дружній турнір для аматорських команд Одеси. Акцент на спортивний дух та командну роботу.',
                 status: 'completed',
                 teams: [
-                    { id: 1, name: 'Чорноморець-Аматори', captain: 'Дмитро Ковальчук', email: 'dmytro@example.com', phone: '+380501111111', players: 11 },
-                    { id: 2, name: 'Портовики', captain: 'Олександр Морозов', email: 'oleksandr@example.com', phone: '+380502222222', players: 11 },
-                    { id: 3, name: 'Приморські Леви', captain: 'Віктор Савченко', email: 'viktor@example.com', phone: '+380503333333', players: 11 },
-                    { id: 4, name: 'Одеса Юнайтед', captain: 'Ігор Павленко', email: 'igor@example.com', phone: '+380504444444', players: 11 },
-                    { id: 5, name: 'Морські Вовки', captain: 'Артем Кравченко', email: 'artem@example.com', phone: '+380505555555', players: 11 },
-                    { id: 6, name: 'Дюк', captain: 'Сергій Бойко', email: 'sergiy@example.com', phone: '+380506666666', players: 11 }
+                    { id: 1, name: 'Чорноморець-Аматори', captain: 'Дмитро Ковальчук', email: 'dmytro@example.com', phone: '+380501111111', players: 11, playerRoster: ['Ковальчук Дмитро', 'Мороз Олег', 'Савченко Василь', 'Павленко Ігор', 'Кравченко Артем', 'Бойко Сергій', 'Галадзюк Роман', 'Степаненко Микола', 'Попович Андрій', 'Лукашенко Влад', 'Гриценко Тарас'] },
+                    { id: 2, name: 'Портовики', captain: 'Олександр Морозов', email: 'oleksandr@example.com', phone: '+380502222222', players: 11, playerRoster: ['Морозов Олександр', 'Ткаченко Вадим', 'Шульга Дмитро', 'Хоменко Олег', 'Назаренко Іван', 'Бутенко Сергій', 'Мельник Роман', 'Панасюк Артем', 'Філоненко Максим', 'Кожухар Віктор', 'Залізняк Ігор'] },
+                    { id: 3, name: 'Приморські Леви', captain: 'Віктор Савченко', email: 'viktor@example.com', phone: '+380503333333', players: 11, playerRoster: ['Савченко Віктор', 'Бондаренко Олег', 'Кравець Андрій', 'Ляшенко Дмитро', 'Гнатенко Сергій', 'Козаченко Роман', 'Сорока Микола', 'Поліщук Іван', 'Довгаль Василь', 'Жураба Тарас', 'Усенко Павло'] },
+                    { id: 4, name: 'Одеса Юнайтед', captain: 'Ігор Павленко', email: 'igor@example.com', phone: '+380504444444', players: 11, playerRoster: ['Павленко Ігор', 'Степаненко Олег', 'Галадзюк Андрій', 'Ярошенко Влад', 'Хоміч Максим', 'Лукашенко Роман', 'Турчін Василь', 'Попович Дмитро', 'Грецький Сергій', 'Макаренко Іван', 'Ворона Артем'] },
+                    { id: 5, name: 'Морські Вовки', captain: 'Артем Кравченко', email: 'artem@example.com', phone: '+380505555555', players: 11, playerRoster: ['Кравченко Артем', 'Бабенко Олег', 'Хриценко Дмитро', 'Карпенко Іван', 'Захарченко Тарас', 'Кузьменко Влад', 'Прокопенко Роман', 'Борисенко Максим', 'Комар Сергій', 'Луценко Андрій', 'Тимошенко Олег'] },
+                    { id: 6, name: 'Дюк', captain: 'Сергій Бойко', email: 'sergiy@example.com', phone: '+380506666666', players: 11, playerRoster: ['Бойко Сергій', 'Мельник Василь', 'Назаренко Олег', 'Коваль Андрій', 'Сорока Дмитро', 'Гнатенко Іван', 'Попович Роман', 'Савченко Олександр', 'Довгаль Тарас', 'Шульга Максим', 'Гриценко Павло'] }
                 ],
                 standings: [
                     { teamId: 1, teamName: 'Чорноморець-Аматори', played: 5, won: 4, drawn: 0, lost: 1, goalsFor: 14, goalsAgainst: 5, points: 12 },
@@ -140,6 +142,7 @@ function initializeSampleData() {
         ];
 
         Storage.save('tournaments', sampleTournaments);
+        Storage.save('dataVersion', DATA_VERSION);
         AppState.tournaments = sampleTournaments;
     } else {
         AppState.tournaments = existingData;

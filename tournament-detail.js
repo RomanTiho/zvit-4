@@ -1,6 +1,7 @@
 // ===== Tournament Detail Page JavaScript =====
 
 let currentTournament = null;
+let playerRoster = [];
 
 // ===== Check if user is admin =====
 function isAdmin() {
@@ -178,8 +179,42 @@ function renderTeams() {
 
     const adminMode = isAdmin();
 
-    teamsList.innerHTML = currentTournament.teams.map(team => `
-        <div class="tournament-card">
+    teamsList.innerHTML = currentTournament.teams.map(team => {
+        const rosterHtml = (team.playerRoster && team.playerRoster.length > 0)
+            ? `<div class="team-roster">
+                <div class="roster-section-header">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <circle cx="5" cy="4" r="2" stroke="currentColor" stroke-width="1.5"/>
+                        <circle cx="11" cy="4" r="2" stroke="currentColor" stroke-width="1.5"/>
+                        <path d="M1 14c0-2.2 1.8-4 4-4s4 1.8 4 4" stroke="currentColor" stroke-width="1.5"/>
+                        <path d="M12 10.2c2 0.4 3 1.8 3 3.8" stroke="currentColor" stroke-width="1.5"/>
+                    </svg>
+                    <strong>Склад гравців (${team.playerRoster.length})</strong>
+                </div>
+                <div class="roster-player-list">
+                    ${team.playerRoster.map((name, i) => `
+                        <div class="roster-player-item${adminMode ? ' roster-admin' : ''}">
+                            <span class="roster-player-num">${i + 1}</span>
+                            <span class="roster-player-name">${name}</span>
+                            ${adminMode ? `
+                            <button class="roster-delete-player-btn" onclick="deletePlayer(${team.id}, ${i})" title="\u0412\u0438\u0434\u0430\u043b\u0438\u0442\u0438 \u0433\u0440\u0430\u0432\u0446\u044f">
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                    <path d="M9 3L3 9M3 3L9 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                </svg>
+                            </button>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            </div>`
+            : `<div class="info-row">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                    <rect x="2" y="4" width="14" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M2 7H16M6 2V6M12 2V6" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+                <span><strong>Гравців:</strong> ${team.players}</span>
+            </div>`;
+
+        return `<div class="tournament-card">
             <div class="tournament-header" style="background: var(--gradient-primary);">
                 <h3>${team.name}</h3>
             </div>
@@ -194,19 +229,13 @@ function renderTeams() {
                     </div>
                     <div class="info-row">
                         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                            <rect x="2" y="4" width="14" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/>
-                            <path d="M2 7H16M6 2V6M12 2V6" stroke="currentColor" stroke-width="1.5"/>
-                        </svg>
-                        <span><strong>Гравців:</strong> ${team.players}</span>
-                    </div>
-                    <div class="info-row">
-                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
                             <rect x="2" y="3" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/>
                             <path d="M2 7H16M6 11H12" stroke="currentColor" stroke-width="1.5"/>
                         </svg>
                         <span>${team.email}</span>
                     </div>
                 </div>
+                ${rosterHtml}
                 ${adminMode ? `
                     <div style="margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--dark-200);">
                         <button class="btn btn-secondary delete-team-btn" data-team-id="${team.id}" style="width: 100%;">
@@ -218,8 +247,8 @@ function renderTeams() {
                     </div>
                 ` : ''}
             </div>
-        </div>
-    `).join('');
+        </div>`;
+    }).join('');
 
     // Add event listeners to delete buttons
     if (adminMode) {
@@ -275,26 +304,31 @@ function setupRegisterTeamModal() {
         });
     }
 
-    if (closeBtn) {
-        closeBtn.addEventListener('click', () => closeModal('registerTeamModal'));
-    }
+    const closeAndReset = () => {
+        closeModal('registerTeamModal');
+        playerRoster = [];
+        renderPlayerRoster();
+    };
 
-    if (cancelBtn) {
-        cancelBtn.addEventListener('click', () => closeModal('registerTeamModal'));
-    }
-
-    if (overlay) {
-        overlay.addEventListener('click', () => closeModal('registerTeamModal'));
-    }
+    if (closeBtn) closeBtn.addEventListener('click', closeAndReset);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeAndReset);
+    if (overlay) overlay.addEventListener('click', closeAndReset);
 
     if (form) {
         form.addEventListener('submit', handleRegisterTeam);
     }
+
+    setupPlayerRosterInput();
 }
 
 // ===== Handle Team Registration =====
 function handleRegisterTeam(e) {
     e.preventDefault();
+
+    if (playerRoster.length < 8) {
+        showError('Необхідно додати щонайменше 8 гравців до складу команди');
+        return;
+    }
 
     const teamData = {
         id: Date.now(),
@@ -302,7 +336,8 @@ function handleRegisterTeam(e) {
         captain: document.getElementById('captainName').value,
         email: document.getElementById('captainEmail').value,
         phone: document.getElementById('captainPhone').value,
-        players: parseInt(document.getElementById('playersCount').value),
+        players: playerRoster.length,
+        playerRoster: [...playerRoster],
         notes: document.getElementById('teamNotes').value
     };
 
@@ -320,8 +355,10 @@ function handleRegisterTeam(e) {
     AppState.tournaments[tournamentIndex] = currentTournament;
     Storage.save('tournaments', AppState.tournaments);
 
-    // Reset form and close modal
+    // Reset form, roster and close modal
     e.target.reset();
+    playerRoster = [];
+    renderPlayerRoster();
     closeModal('registerTeamModal');
 
     // Refresh display
@@ -363,6 +400,74 @@ function deleteTeam(teamId) {
     });
 }
 
+// ===== Player Roster Input (Form) =====
+function setupPlayerRosterInput() {
+    const addBtn = document.getElementById('addPlayerBtn');
+    const input = document.getElementById('playerNameInput');
+    if (!addBtn || !input) return;
+
+    addBtn.addEventListener('click', addPlayer);
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addPlayer();
+        }
+    });
+}
+
+function addPlayer() {
+    const input = document.getElementById('playerNameInput');
+    const name = input.value.trim();
+    if (!name) return;
+    if (playerRoster.length >= 25) {
+        showWarning('Максимум 25 гравців у складі');
+        return;
+    }
+    if (playerRoster.map(n => n.toLowerCase()).includes(name.toLowerCase())) {
+        showWarning('Такий гравець вже доданий до складу');
+        return;
+    }
+    playerRoster.push(name);
+    input.value = '';
+    input.focus();
+    renderPlayerRoster();
+}
+
+function removePlayer(index) {
+    playerRoster.splice(index, 1);
+    renderPlayerRoster();
+}
+
+function renderPlayerRoster() {
+    const list = document.getElementById('playerRosterList');
+    const label = document.getElementById('playerCountLabel');
+    if (!list) return;
+
+    const count = playerRoster.length;
+    if (label) {
+        const enough = count >= 8;
+        label.textContent = count === 0 ? '(мінімум 8)' : `(${count} гравців${enough ? ' ✓' : ', потрібно ще ' + (8 - count)})`;
+        label.style.color = enough ? 'var(--success)' : 'var(--dark-500)';
+    }
+
+    if (count === 0) {
+        list.innerHTML = '<div class="roster-empty">Додайте щонайменше 8 гравців</div>';
+        return;
+    }
+
+    list.innerHTML = playerRoster.map((name, i) => `
+        <div class="roster-form-item">
+            <span class="roster-num">${i + 1}</span>
+            <span class="roster-name">${name}</span>
+            <button type="button" class="roster-remove-btn" onclick="removePlayer(${i})" title="Видалити">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M9 3L3 9M3 3L9 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+            </button>
+        </div>
+    `).join('');
+}
+
 // ===== Initialize Tournament Detail Page =====
 document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('tournamentTitle')) {
@@ -372,6 +477,31 @@ document.addEventListener('DOMContentLoaded', () => {
         setupAdminLogout();
     }
 });
+
+// ===== Delete Player from Roster (Admin Only) =====
+function deletePlayer(teamId, playerIndex) {
+    if (!isAdmin()) {
+        showError('Тільки адміністратори можуть видаляти гравців');
+        return;
+    }
+
+    const team = currentTournament.teams.find(t => t.id === teamId);
+    if (!team || !team.playerRoster) return;
+
+    const playerName = team.playerRoster[playerIndex];
+
+    showConfirm(`Видалити гравця "${playerName}" зі складу?`, () => {
+        team.playerRoster.splice(playerIndex, 1);
+        team.players = team.playerRoster.length;
+
+        const tournamentIndex = AppState.tournaments.findIndex(t => t.id === currentTournament.id);
+        AppState.tournaments[tournamentIndex] = currentTournament;
+        Storage.save('tournaments', AppState.tournaments);
+
+        renderTeams();
+        showSuccess(`Гравця "​${playerName}" видалено зі складу`);
+    });
+}
 
 // ===== Setup Admin Login/Logout =====
 function setupAdminLogout() {
