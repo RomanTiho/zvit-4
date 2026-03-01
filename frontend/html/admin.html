@@ -5,49 +5,54 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Адмін-панель - FootballHub</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="tournaments.css">
-    <link rel="stylesheet" href="admin.css">
-    <link rel="stylesheet" href="toast.css">
-    <link rel="stylesheet" href="confirm-modal.css">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/tournaments.css">
+    <link rel="stylesheet" href="/static/css/admin.css">
+    <link rel="stylesheet" href="/static/css/toast.css">
+    <link rel="stylesheet" href="/static/css/confirm-modal.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
     <!-- Navigation -->
-    <nav class="navbar" id="adminNavbar">
+    <nav class="navbar">
         <div class="container">
             <div class="nav-content">
-                <a href="admin.html" class="logo">
+                <a href="/index.html" class="logo">
                     <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
                         <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="2" />
                         <path d="M16 2C16 2 10 8 10 16C10 24 16 30 16 30" stroke="currentColor" stroke-width="2" />
                         <path d="M16 2C16 2 22 8 22 16C22 24 16 30 16 30" stroke="currentColor" stroke-width="2" />
                         <path d="M2 16H30" stroke="currentColor" stroke-width="2" />
                     </svg>
-                    <span>FootballHub Admin</span>
+                    <span>FootballHub</span>
                 </a>
-                <div class="nav-links">
-                    <a href="admin.html" class="active">Адмін-панель</a>
-                    <a href="index.html" target="_blank" title="Відкрити в новій вкладці">
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"
-                            style="margin-right: 0.25rem; vertical-align: middle;">
-                            <path
-                                d="M10 2H12V4M12 2L7 7M5 2H3C2.5 2 2 2.5 2 3V11C2 11.5 2.5 12 3 12H11C11.5 12 12 11.5 12 11V9"
-                                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                <ul class="nav-links" id="mainNavLinks">
+                    <li><a href="/index.html">Головна</a></li>
+                    <li><a href="/tournaments.html">Турніри</a></li>
+                    <li><a href="/players.html">Рейтинг</a></li>
+                    <li><a id="featuresLink" href="/index.html#features">Можливості</a></li>
+                </ul>
+                <div style="display: flex; gap: 1rem; align-items: center;" id="headerActions">
+                    <button class="btn btn-primary" id="createTournamentBtn" style="display:none">Створити
+                        турнір</button>
+                    <button class="btn btn-primary" id="registerTeamBtn" style="display:none">Зареєструвати
+                        команду</button>
+                    <button class="btn btn-secondary" id="adminLogoutBtn" style="display:none">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="margin-right: 0.5rem;">
+                            <path d="M6 14H3C2.5 14 2 13.5 2 13V3C2 2.5 2.5 2 3 2H6" stroke="currentColor"
+                                stroke-width="1.5" stroke-linecap="round" />
+                            <path d="M11 11L14 8L11 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                            <path d="M14 8H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
                         </svg>
-                        Головна сайту
-                    </a>
-                    <a href="tournaments.html" target="_blank" title="Відкрити в новій вкладці">
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"
-                            style="margin-right: 0.25rem; vertical-align: middle;">
-                            <path
-                                d="M10 2H12V4M12 2L7 7M5 2H3C2.5 2 2 2.5 2 3V11C2 11.5 2.5 12 3 12H11C11.5 12 12 11.5 12 11V9"
-                                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-                        </svg>
-                        Турніри сайту
-                    </a>
+                        Вийти з адміна
+                    </button>
                 </div>
+
+                <!-- Auth navigation container to be populated by auth-nav.js -->
+                <div class="auth-nav-container" id="authNavContainer"></div>
             </div>
         </div>
     </nav>
@@ -243,10 +248,12 @@
         </div>
     </section>
 
-    <script src="toast.js"></script>
-    <script src="confirm-modal.js"></script>
-    <script src="app.js"></script>
-    <script src="admin.js"></script>
+    <script src="/static/js/toast.js"></script>
+    <script src="/static/js/confirm-modal.js"></script>
+    <script src="/static/js/config.js"></script>
+    <script src="/static/js/api-client.js"></script>
+    <script src="/static/js/app.js"></script>
+    <script src="/static/js/admin.js"></script>
 </body>
 
 </html>

@@ -1,5 +1,27 @@
 from django.contrib import admin
-from .models import Player, PlayerStats, PlayerRatingHistory
+from .models import Player, PlayerStats, PlayerRatingHistory, Tournament, Team, Standing, Match
+
+@admin.register(Tournament)
+class TournamentAdmin(admin.ModelAdmin):
+    list_display = ('name', 'status', 'start_date', 'end_date', 'format')
+    list_filter = ('status', 'format')
+    search_fields = ('name', 'location')
+
+@admin.register(Team)
+class TeamAdmin(admin.ModelAdmin):
+    list_display = ('name', 'tournament', 'captain', 'email')
+    list_filter = ('tournament',)
+    search_fields = ('name', 'captain')
+
+@admin.register(Standing)
+class StandingAdmin(admin.ModelAdmin):
+    list_display = ('team', 'tournament', 'played', 'points')
+    list_filter = ('tournament',)
+
+@admin.register(Match)
+class MatchAdmin(admin.ModelAdmin):
+    list_display = ('home_team', 'away_team', 'home_score', 'away_score', 'date', 'status')
+    list_filter = ('tournament', 'status')
 
 
 @admin.register(Player)

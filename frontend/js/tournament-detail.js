@@ -18,7 +18,7 @@ function isAdmin() {
 }
 
 // ===== Load Tournament Data =====
-function loadTournamentData() {
+async function loadTournamentData() {
     // Try to get tournament ID from URL parameter first, then from localStorage
     const urlParams = new URLSearchParams(window.location.search);
     let tournamentId = urlParams.get('id');
@@ -38,8 +38,10 @@ function loadTournamentData() {
         return;
     }
 
-    currentTournament = AppState.tournaments.find(t => t.id === tournamentId);
-    if (!currentTournament) {
+    try {
+        currentTournament = await TournamentsAPI.getTournament(tournamentId);
+    } catch (error) {
+        console.error('Failed to load tournament:', error);
         window.location.href = 'tournaments.html';
         return;
     }
@@ -55,11 +57,11 @@ function loadTournamentData() {
 function renderTournamentHeader() {
     document.getElementById('tournamentTitle').textContent = currentTournament.name;
     document.getElementById('tournamentDates').textContent =
-        `${formatDate(currentTournament.startDate)} - ${formatDate(currentTournament.endDate)}`;
+        `${formatDate(currentTournament.start_date)} - ${formatDate(currentTournament.end_date)}`;
     document.getElementById('tournamentLocation').textContent = currentTournament.location;
     document.getElementById('tournamentFormat').textContent = getFormatName(currentTournament.format);
     document.getElementById('tournamentTeams').textContent =
-        `${currentTournament.teams.length} / ${currentTournament.maxTeams} команд`;
+        `${currentTournament.teams.length} / ${currentTournament.max_teams} команд`;
 }
 
 // ===== Render Overview Tab =====
@@ -214,7 +216,7 @@ function renderTeams() {
                 <span><strong>Гравців:</strong> ${team.players}</span>
             </div>`;
 
-        return `<div class="tournament-card">
+        return `<div class="tournament-card" data-live-team="${team.id}">
             <div class="tournament-header" style="background: var(--gradient-primary);">
                 <h3>${team.name}</h3>
             </div>
@@ -296,7 +298,7 @@ function setupRegisterTeamModal() {
 
     if (registerBtn) {
         registerBtn.addEventListener('click', () => {
-            if (currentTournament.teams.length >= currentTournament.maxTeams) {
+            if (currentTournament.teams.length >= currentTournament.max_teams) {
                 showWarning('Вибачте, всі місця в турнірі зайняті');
                 return;
             }
@@ -469,9 +471,9 @@ function renderPlayerRoster() {
 }
 
 // ===== Initialize Tournament Detail Page =====
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     if (document.getElementById('tournamentTitle')) {
-        loadTournamentData();
+        await loadTournamentData();
         setupTabs();
         setupRegisterTeamModal();
         setupAdminLogout();

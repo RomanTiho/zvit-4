@@ -1,4 +1,60 @@
 // ===== Tournaments Page JavaScript =====
+let map = null;
+let markers = [];
+
+const CITY_COORDS = {
+    'київ': [50.4501, 30.5234],
+    'львів': [49.8397, 24.0297],
+    'харків': [49.9935, 36.2304],
+    'одеса': [46.4825, 30.7233],
+    'дніпро': [48.4647, 35.0461]
+};
+
+function getCoords(locationStr) {
+    if (!locationStr) return [48.3794, 31.1656];
+    const locLower = locationStr.toLowerCase();
+    for (const city in CITY_COORDS) {
+        if (locLower.includes(city)) return CITY_COORDS[city];
+    }
+    // Random jitter around center for unknown locations to prevent overlapping
+    return [48.3794 + (Math.random() - 0.5) * 2, 31.1656 + (Math.random() - 0.5) * 2];
+}
+
+function updateMap(tournaments) {
+    if (!document.getElementById('tournamentsMap')) return;
+
+    if (!map) {
+        map = L.map('tournamentsMap').setView([48.3794, 31.1656], 5);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+    }
+
+    // Clear old markers
+    markers.forEach(m => map.removeLayer(m));
+    markers = [];
+
+    tournaments.forEach(t => {
+        const coords = getCoords(t.location);
+        const marker = L.marker(coords).addTo(map);
+
+        // Popup content
+        const popupContent = `
+            <div style="text-align: center; min-width: 150px;">
+                <strong style="font-size: 14px; color: var(--primary);">${t.name}</strong><br>
+                <div style="margin: 5px 0; font-size: 12px;">${t.location}</div>
+                <a href="tournament-detail.html?id=${t.id}" style="display: inline-block; margin-top: 5px; padding: 4px 8px; background: var(--primary); color: white; border-radius: 4px; text-decoration: none; font-size: 12px;">Перейти до турніру</a>
+            </div>
+        `;
+        marker.bindPopup(popupContent);
+        markers.push(marker);
+    });
+
+    if (markers.length > 0) {
+        const group = new L.featureGroup(markers);
+        map.fitBounds(group.getBounds().pad(0.2));
+    }
+}
 
 // ===== Render Tournaments Grid =====
 function renderTournaments(tournaments) {
@@ -32,7 +88,7 @@ function renderTournaments(tournaments) {
                         <rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/>
                         <path d="M2 6H14M5 1V5M11 1V5" stroke="currentColor" stroke-width="1.5"/>
                     </svg>
-                    ${formatDate(tournament.startDate)} - ${formatDate(tournament.endDate)}
+                    ${formatDate(tournament.start_date)} - ${formatDate(tournament.end_date)}
                 </div>
             </div>
             <div class="tournament-body">
@@ -55,7 +111,7 @@ function renderTournaments(tournaments) {
                 <p class="tournament-description">${tournament.description}</p>
                 <div class="tournament-footer">
                     <span class="teams-count">
-                        ${tournament.teams.length} / ${tournament.maxTeams} команд
+                        ${tournament.teams.length} / ${tournament.max_teams} команд
                     </span>
                     <button class="btn btn-primary btn-small" onclick="event.stopPropagation(); viewTournament(${tournament.id})">
                         Детальніше
@@ -64,6 +120,9 @@ function renderTournaments(tournaments) {
             </div>
         </div>
     `).join('');
+
+    // Update map with displayed tournaments
+    updateMap(tournaments);
 }
 
 // ===== Filter Tournaments =====
@@ -154,7 +213,7 @@ function handleCreateTournament(e) {
     };
 
     // Validate dates
-    if (new Date(requestData.startDate) >= new Date(requestData.endDate)) {
+    if (new Date(requestData.start_date) >= new Date(requestData.end_date)) {
         showError('Дата завершення повинна бути пізніше дати початку');
         return;
     }
@@ -175,10 +234,17 @@ function handleCreateTournament(e) {
 }
 
 // ===== Initialize Tournaments Page =====
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // Check if we're on tournaments page
     if (document.getElementById('tournamentsGrid')) {
-        renderTournaments(AppState.tournaments);
+        try {
+            const response = await TournamentsAPI.getTournaments();
+            AppState.tournaments = response.results || response;
+            renderTournaments(AppState.tournaments);
+        } catch (error) {
+            console.error('Failed to load tournaments:', error);
+            renderTournaments([]);
+        }
         setupModalHandlers();
 
         // Setup filters

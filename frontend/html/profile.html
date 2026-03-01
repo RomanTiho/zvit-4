@@ -4,9 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мій Профіль - FootballHub</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="toast.css">
+    <title>Профіль Тренера - FootballHub</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/toast.css">
     <style>
         .profile-container {
             max-width: 1000px;
@@ -309,7 +310,7 @@
     <nav class="navbar">
         <div class="container">
             <div class="nav-content">
-                <a href="index.html" class="logo">
+                <a href="/index.html" class="logo">
                     <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
                         <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="2" />
                         <path d="M16 2C16 2 10 8 10 16C10 24 16 30 16 30" stroke="currentColor" stroke-width="2" />
@@ -318,12 +319,31 @@
                     </svg>
                     <span>FootballHub</span>
                 </a>
-                <ul class="nav-links">
-                    <li><a href="index.html">Головна</a></li>
-                    <li><a href="tournaments.html">Турніри</a></li>
-                    <li><a href="players.html">Рейтинг</a></li>
-                    <li><a href="profile.html" class="active">Профіль</a></li>
+                <ul class="nav-links" id="mainNavLinks">
+                    <li><a href="/index.html">Головна</a></li>
+                    <li><a href="/tournaments.html">Турніри</a></li>
+                    <li><a href="/players.html">Рейтинг</a></li>
+                    <li><a id="featuresLink" href="/index.html#features">Можливості</a></li>
                 </ul>
+                <div style="display: flex; gap: 1rem; align-items: center;" id="headerActions">
+                    <button class="btn btn-primary" id="createTournamentBtn" style="display:none">Створити
+                        турнір</button>
+                    <button class="btn btn-primary" id="registerTeamBtn" style="display:none">Зареєструвати
+                        команду</button>
+                    <button class="btn btn-secondary" id="adminLogoutBtn" style="display:none">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="margin-right: 0.5rem;">
+                            <path d="M6 14H3C2.5 14 2 13.5 2 13V3C2 2.5 2.5 2 3 2H6" stroke="currentColor"
+                                stroke-width="1.5" stroke-linecap="round" />
+                            <path d="M11 11L14 8L11 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                            <path d="M14 8H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                        </svg>
+                        Вийти з адміна
+                    </button>
+                </div>
+
+                <!-- Auth navigation container to be populated by auth-nav.js -->
+                <div class="auth-nav-container" id="authNavContainer"></div>
             </div>
         </div>
     </nav>
@@ -338,20 +358,7 @@
         <div class="profile-header">
             <div class="profile-info">
                 <h1 id="profileName">Завантаження...</h1>
-                <div class="profile-meta">
-                    <div class="meta-item">
-                        <span class="meta-label">Позиція</span>
-                        <span class="meta-value" id="profilePosition">-</span>
-                    </div>
-                    <div class="meta-item">
-                        <span class="meta-label">Рейтинг</span>
-                        <span class="meta-value" id="profileRating">0.00</span>
-                    </div>
-                    <div class="meta-item">
-                        <span class="meta-label">Матчів</span>
-                        <span class="meta-value" id="profileMatches">0</span>
-                    </div>
-                </div>
+
             </div>
             <div class="profile-actions">
                 <button class="btn btn-primary" id="editBtn">Редагувати</button>
@@ -359,7 +366,7 @@
             </div>
         </div>
 
-        <div class="profile-content">
+        <div class="profile-content" style="grid-template-columns: 1fr;">
             <!-- Profile Details -->
             <div class="profile-card">
                 <h2>Особиста інформація</h2>
@@ -381,10 +388,7 @@
                         <label>Прізвище</label>
                         <p id="viewLastName">-</p>
                     </div>
-                    <div class="form-group">
-                        <label>Ігровий номер</label>
-                        <p id="viewJerseyNumber">-</p>
-                    </div>
+
                 </div>
 
                 <form class="edit-mode" id="editMode">
@@ -404,53 +408,19 @@
                         <label>Прізвище</label>
                         <input type="text" id="editLastName">
                     </div>
-                    <div class="form-group">
-                        <label>Позиція</label>
-                        <select id="editPosition">
-                            <option value="GK">Воротар</option>
-                            <option value="DEF">Захисник</option>
-                            <option value="MID">Півзахисник</option>
-                            <option value="FWD">Нападник</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Ігровий номер (1-99)</label>
-                        <input type="number" id="editJerseyNumber" min="1" max="99" placeholder="Наприклад: 10">
-                    </div>
+
                     <div style="display: flex; gap: var(--spacing-md);">
                         <button type="submit" class="btn btn-primary">Зберегти</button>
                         <button type="button" class="btn btn-secondary" id="cancelBtn">Скасувати</button>
                     </div>
                 </form>
             </div>
-
-            <!-- Player Stats -->
-            <div class="profile-card">
-                <h2>Статистика</h2>
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-value" id="statGoals">0</div>
-                        <div class="stat-label">Голи</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="statAssists">0</div>
-                        <div class="stat-label">Асисти</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="statYellow">0</div>
-                        <div class="stat-label">Жовті картки</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="statRed">0</div>
-                        <div class="stat-label">Червоні картки</div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 
-    <script src="toast.js"></script>
-    <script src="api-client.js"></script>
+    <script src="/static/js/toast.js"></script>
+    <script src="/static/js/config.js"></script>
+    <script src="/static/js/api-client.js"></script>
     <script>
         let currentUser = null;
         let token = localStorage.getItem('access_token'); // глобальна змінна для токена
@@ -463,32 +433,57 @@
             'FWD': 'Нападник'
         };
 
+        // Refresh expired access token using the refresh token
+        async function refreshAccessToken() {
+            const refreshToken = localStorage.getItem('refresh_token');
+            if (!refreshToken) return null;
+
+            try {
+                const resp = await fetch(`${CONFIG.API_BASE_URL}/auth/token/refresh/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ refresh: refreshToken })
+                });
+                if (!resp.ok) return null;
+                const data = await resp.json();
+                if (data.access) {
+                    localStorage.setItem('access_token', data.access);
+                    return data.access;
+                }
+            } catch (e) {
+                console.error('[Profile] Token refresh failed:', e);
+            }
+            return null;
+        }
+
         // Check authentication and load profile
         async function checkAuthAndLoadProfile() {
             console.log('🔍 [Profile] Checking authentication...');
-            const token = localStorage.getItem('access_token');
+            let token = localStorage.getItem('access_token');
 
             if (!token) {
-                console.log('❌ [Profile] No token found');
                 window.location.href = 'auth.html';
                 return;
             }
 
-            console.log('✅ [Profile] Token found');
-
             try {
-                console.log('📡 [Profile] Calling /api/auth/me/...');
-                const response = await fetch('http://localhost:8001/api/auth/me/', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
+                let response = await fetch(`${CONFIG.API_BASE_URL}/auth/me/`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
 
-                console.log('📡 [Profile] Response status:', response.status);
+                // If 401 — try to refresh and retry once
+                if (response.status === 401) {
+                    console.log('🔄 [Profile] Access token expired, refreshing...');
+                    const newToken = await refreshAccessToken();
+                    if (newToken) {
+                        token = newToken;
+                        response = await fetch(`${CONFIG.API_BASE_URL}/auth/me/`, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                    }
+                }
 
                 if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('❌ [Profile] API Error:', response.status, errorText);
                     throw new Error(`Invalid token: ${response.status}`);
                 }
 
@@ -496,33 +491,14 @@
                 console.log('✅ [Profile] User loaded:', currentUser.username);
                 displayProfile(currentUser);
 
-                if (currentUser.player) {
-                    loadPlayerStats(currentUser.player.id);
-                }
-
-                // Показати профіль після успішної перевірки
-                console.log('✨ [Profile] Showing profile');
                 document.querySelector('.profile-container').classList.add('loaded');
                 document.getElementById('loadingSpinner').classList.add('hidden');
 
             } catch (error) {
                 console.error('❌ [Profile] Error:', error);
-
-                // Зберегти помилку для діагностики
-                sessionStorage.setItem('profile_error', JSON.stringify({
-                    message: error.message,
-                    timestamp: new Date().toISOString()
-                }));
-
-                console.log('🗑️ [Profile] Removing tokens');
                 localStorage.removeItem('access_token');
                 localStorage.removeItem('refresh_token');
-                console.log('🔄 [Profile] Redirecting to auth.html');
-
-                // Затримка щоб побачити логи
-                setTimeout(() => {
-                    window.location.href = 'auth.html';
-                }, 100);
+                setTimeout(() => { window.location.href = 'auth.html'; }, 100);
             }
         }
 
@@ -534,67 +510,22 @@
                 : user.username;
             document.getElementById('profileName').textContent = fullName;
 
-            if (user.player) {
-                document.getElementById('profilePosition').textContent =
-                    positionNames[user.player.position] || 'Не вказано';
-                document.getElementById('profileRating').textContent =
-                    user.player.overall_rating.toFixed(2);
-                document.getElementById('profileMatches').textContent =
-                    user.player.matches_played;
-            } else {
-                document.getElementById('profilePosition').textContent = 'Не вказано';
-                document.getElementById('profileRating').textContent = '0.00';
-                document.getElementById('profileMatches').textContent = '0';
-            }
 
             // View mode
             document.getElementById('viewUsername').textContent = user.username;
             document.getElementById('viewEmail').textContent = user.email || 'Не вказано';
             document.getElementById('viewFirstName').textContent = user.first_name || 'Не вказано';
             document.getElementById('viewLastName').textContent = user.last_name || 'Не вказано';
-            document.getElementById('viewJerseyNumber').textContent =
-                user.player?.jersey_number ? `№ ${user.player.jersey_number}` : 'Не вказано';
+
 
             // Edit mode
             document.getElementById('editUsername').value = user.username;
             document.getElementById('editEmail').value = user.email || '';
             document.getElementById('editFirstName').value = user.first_name || '';
             document.getElementById('editLastName').value = user.last_name || '';
-            if (user.player) {
-                document.getElementById('editPosition').value = user.player.position;
-                document.getElementById('editJerseyNumber').value = user.player.jersey_number || '';
-            }
+
         }
 
-        // Load player stats
-        async function loadPlayerStats(playerId) {
-            try {
-                const response = await fetch(
-                    `http://localhost:8001/api/player-stats/?player_id=${playerId}`
-                );
-
-                if (!response.ok) return;
-
-                const data = await response.json();
-                const stats = data.results || data;
-
-                // Calculate totals
-                const totals = stats.reduce((acc, stat) => ({
-                    goals: acc.goals + stat.goals,
-                    assists: acc.assists + stat.assists,
-                    yellow_cards: acc.yellow_cards + stat.yellow_cards,
-                    red_cards: acc.red_cards + stat.red_cards
-                }), { goals: 0, assists: 0, yellow_cards: 0, red_cards: 0 });
-
-                document.getElementById('statGoals').textContent = totals.goals;
-                document.getElementById('statAssists').textContent = totals.assists;
-                document.getElementById('statYellow').textContent = totals.yellow_cards;
-                document.getElementById('statRed').textContent = totals.red_cards;
-
-            } catch (error) {
-                console.error('Error loading stats:', error);
-            }
-        }
 
         // Edit mode
         document.getElementById('editBtn').addEventListener('click', () => {
@@ -624,7 +555,7 @@
                 const response = await fetch('http://localhost:8001/api/auth/update_profile/', {
                     method: 'PUT',
                     headers: {
-                        'Authorization': `Bearer ${token}`,
+                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(data)
@@ -657,7 +588,7 @@
                 await fetch('http://localhost:8001/api/auth/logout/', {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${token}`,
+                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ refresh: refreshToken })

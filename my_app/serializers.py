@@ -1,7 +1,33 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
-from .models import Player, PlayerStats, PlayerRatingHistory
+from .models import Player, PlayerStats, PlayerRatingHistory, Tournament, Team, Standing, Match
+
+class TeamSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Team
+        fields = '__all__'
+
+class StandingSerializer(serializers.ModelSerializer):
+    team_name = serializers.CharField(source='team.name', read_only=True)
+    class Meta:
+        model = Standing
+        fields = '__all__'
+
+class MatchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Match
+        fields = '__all__'
+
+class TournamentSerializer(serializers.ModelSerializer):
+    teams = TeamSerializer(many=True, read_only=True)
+    standings = StandingSerializer(many=True, read_only=True)
+    matches = MatchSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Tournament
+        fields = '__all__'
+
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -61,10 +87,16 @@ class UserProfileSerializer(serializers.ModelSerializer):
     def get_player(self, obj):
         try:
             player = obj.player
+            request = self.context.get('request')
+            avatar_url = None
+            if player.avatar:
+                avatar_url = request.build_absolute_uri(player.avatar.url) if request else player.avatar.url
+                
             return {
                 'id': player.id,
                 'position': player.position,
                 'jersey_number': player.jersey_number,
+                'avatar': avatar_url,
                 'overall_rating': float(player.overall_rating),
                 'matches_played': player.matches_played
             }
@@ -114,9 +146,19 @@ class PlayerStatsSerializer(serializers.ModelSerializer):
     """Serializer для статистики гравця"""
     class Meta:
         model = PlayerStats
-        fields = ['id', 'match_id', 'goals', 'assists', 'yellow_cards', 
-                  'red_cards', 'minutes_played', 'rating', 'created_at']
+        fields = [
+            'id', 'match_id',
+            # базова статистика
+            'goals', 'assists', 'minutes_played',
+            'yellow_cards', 'red_cards',
+            # xG-натхненна статистика
+            'shots', 'shots_on_target', 'key_passes',
+            'saves', 'tackles', 'interceptions',
+            # авторозрахунок
+            'rating', 'created_at',
+        ]
         read_only_fields = ['rating', 'created_at']
+
 
 
 class PlayerRatingHistorySerializer(serializers.ModelSerializer):
@@ -134,7 +176,7 @@ class PlayerSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Player
-        fields = ['id', 'username', 'email', 'position', 'jersey_number', 'overall_rating', 
+        fields = ['id', 'username', 'email', 'position', 'jersey_number', 'avatar', 'overall_rating', 
                   'matches_played', 'recent_stats', 'created_at', 'updated_at']
         read_only_fields = ['overall_rating', 'matches_played', 'created_at', 'updated_at']
     

@@ -5,13 +5,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Турніри - FootballHub</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <meta name="description" content="Перегляньте всі доступні аматорські футбольні турніри та приєднуйтесь до гри">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="tournaments.css">
-    <link rel="stylesheet" href="toast.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/tournaments.css">
+    <link rel="stylesheet" href="/static/css/toast.css">
+
+    <!-- Leaflet Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 </head>
 
 <body>
@@ -19,7 +26,7 @@
     <nav class="navbar">
         <div class="container">
             <div class="nav-content">
-                <a href="index.html" class="logo">
+                <a href="/index.html" class="logo">
                     <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
                         <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="2" />
                         <path d="M16 2C16 2 10 8 10 16C10 24 16 30 16 30" stroke="currentColor" stroke-width="2" />
@@ -28,12 +35,31 @@
                     </svg>
                     <span>FootballHub</span>
                 </a>
-                <ul class="nav-links">
-                    <li><a href="index.html">Головна</a></li>
-                    <li><a href="tournaments.html" class="active">Турніри</a></li>
-                    <li><a href="index.html#features">Можливості</a></li>
+                <ul class="nav-links" id="mainNavLinks">
+                    <li><a href="/index.html">Головна</a></li>
+                    <li><a href="/tournaments.html">Турніри</a></li>
+                    <li><a href="/players.html">Рейтинг</a></li>
+                    <li><a id="featuresLink" href="/index.html#features">Можливості</a></li>
                 </ul>
-                <button class="btn btn-primary" id="createTournamentBtn">Створити турнір</button>
+                <div style="display: flex; gap: 1rem; align-items: center;" id="headerActions">
+                    <button class="btn btn-primary" id="createTournamentBtn" style="display:none">Створити
+                        турнір</button>
+                    <button class="btn btn-primary" id="registerTeamBtn" style="display:none">Зареєструвати
+                        команду</button>
+                    <button class="btn btn-secondary" id="adminLogoutBtn" style="display:none">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="margin-right: 0.5rem;">
+                            <path d="M6 14H3C2.5 14 2 13.5 2 13V3C2 2.5 2.5 2 3 2H6" stroke="currentColor"
+                                stroke-width="1.5" stroke-linecap="round" />
+                            <path d="M11 11L14 8L11 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                            <path d="M14 8H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                        </svg>
+                        Вийти з адміна
+                    </button>
+                </div>
+
+                <!-- Auth navigation container to be populated by auth-nav.js -->
+                <div class="auth-nav-container" id="authNavContainer"></div>
             </div>
         </div>
     </nav>
@@ -79,6 +105,11 @@
     <!-- Tournaments Grid -->
     <section class="tournaments-section">
         <div class="container">
+            <!-- Leaflet Map Container -->
+            <div id="tournamentsMap"
+                style="height: 400px; width: 100%; border-radius: 12px; margin-bottom: 2rem; box-shadow: var(--shadow-sm); z-index: 1;">
+            </div>
+
             <div id="tournamentsGrid" class="tournaments-grid">
                 <!-- Tournaments will be dynamically inserted here -->
             </div>
@@ -196,9 +227,9 @@
                 <div class="footer-section">
                     <h4>Навігація</h4>
                     <ul>
-                        <li><a href="index.html">Головна</a></li>
-                        <li><a href="tournaments.html">Турніри</a></li>
-                        <li><a href="index.html#features">Можливості</a></li>
+                        <li><a href="/index.html">Головна</a></li>
+                        <li><a href="/tournaments.html">Турніри</a></li>
+                        <li><a href="/index.html#features">Можливості</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
@@ -215,10 +246,21 @@
         </div>
     </footer>
 
-    <script src="toast.js"></script>
-    <script src="auth-nav.js"></script>
-    <script src="app.js"></script>
-    <script src="tournaments.js"></script>
+    <script src="/static/js/toast.js"></script>
+    <script src="/static/js/config.js"></script>
+    <script src="/static/js/api-client.js"></script>
+    <script src="/static/js/auth-nav.js"></script>
+    <script src="/static/js/app.js"></script>
+    <script src="/static/js/tournaments.js"></script>
+    <script>
+        // Показати кнопку "Створити турнір" тільки авторизованим
+        (function () {
+            if (localStorage.getItem('access_token')) {
+                const btn = document.getElementById('createTournamentBtn');
+                if (btn) btn.style.display = '';
+            }
+        })();
+    </script>
 </body>
 
 </html>

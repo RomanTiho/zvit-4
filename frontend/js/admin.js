@@ -224,13 +224,13 @@ function loadRequests() {
                     <strong>Локація:</strong> <span>${request.location}</span>
                 </div>
                 <div class="request-field">
-                    <strong>Дати:</strong> <span>${formatDate(request.startDate)} - ${formatDate(request.endDate)}</span>
+                    <strong>Дати:</strong> <span>${formatDate(request.start_date)} - ${formatDate(request.end_date)}</span>
                 </div>
                 <div class="request-field">
                     <strong>Формат:</strong> <span>${getFormatName(request.format)}</span>
                 </div>
                 <div class="request-field">
-                    <strong>Максимум команд:</strong> <span>${request.maxTeams}</span>
+                    <strong>Максимум команд:</strong> <span>${request.max_teams}</span>
                 </div>
                 <div class="request-description">
                     <strong>Опис:</strong><br>
@@ -255,10 +255,10 @@ window.createFromRequest = function (requestId) {
         const newTournament = {
             id: Date.now(),
             name: request.tournamentName,
-            startDate: request.startDate,
-            endDate: request.endDate,
+            startDate: request.start_date,
+            endDate: request.end_date,
             format: request.format,
-            maxTeams: parseInt(request.maxTeams),
+            maxTeams: parseInt(request.max_teams),
             location: request.location,
             description: request.description,
             status: 'upcoming',
@@ -314,7 +314,7 @@ function handleAdminCreateTournament(e) {
     };
 
     // Validate dates
-    if (new Date(formData.startDate) >= new Date(formData.endDate)) {
+    if (new Date(formData.start_date) >= new Date(formData.end_date)) {
         showError('Дата завершення повинна бути пізніше дати початку');
         return;
     }
@@ -334,7 +334,14 @@ function handleAdminCreateTournament(e) {
 }
 
 // Load all tournaments
-function loadTournaments() {
+async function loadTournaments() {
+    try {
+        const response = await TournamentsAPI.getTournaments();
+        AppState.tournaments = response.results || response;
+    } catch (error) {
+        console.error('Failed to load tournaments:', error);
+        AppState.tournaments = [];
+    }
     const tournaments = AppState.tournaments || [];
     const tournamentsList = document.getElementById('adminTournamentsList');
 
@@ -361,7 +368,7 @@ function loadTournaments() {
                         <rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/>
                         <path d="M2 6H14M5 1V5M11 1V5" stroke="currentColor" stroke-width="1.5"/>
                     </svg>
-                    ${formatDate(tournament.startDate)} - ${formatDate(tournament.endDate)}
+                    ${formatDate(tournament.start_date)} - ${formatDate(tournament.end_date)}
                 </div>
             </div>
             <div class="admin-tournament-body">
@@ -386,7 +393,7 @@ function loadTournaments() {
                             <circle cx="10" cy="6" r="2" stroke="currentColor" stroke-width="1.5"/>
                             <circle cx="8" cy="11" r="2" stroke="currentColor" stroke-width="1.5"/>
                         </svg>
-                        <span>${tournament.teams.length} / ${tournament.maxTeams} команд</span>
+                        <span>${tournament.teams.length} / ${tournament.max_teams} команд</span>
                     </div>
                 </div>
                 <div class="admin-tournament-actions">
@@ -417,7 +424,7 @@ window.viewTournamentAsAdmin = function (tournamentId) {
 };
 
 // Delete tournament
-window.deleteTournament = function (tournamentId) {
+window.deleteTournament = async function (tournamentId) {
     const tournament = AppState.tournaments.find(t => t.id === tournamentId);
 
     if (!tournament) {
@@ -425,11 +432,14 @@ window.deleteTournament = function (tournamentId) {
         return;
     }
 
-    showConfirm(`Ви впевнені, що хочете видалити турнір "${tournament.name}"?`, () => {
-        AppState.tournaments = AppState.tournaments.filter(t => t.id !== tournamentId);
-        Storage.save('tournaments', AppState.tournaments);
-        loadTournaments();
-        showSuccess('Турнір видалено!');
+    showConfirm(`Ви впевнені, що хочете видалити турнір "${tournament.name}"?`, async () => {
+        try {
+            await APIClient._fetch(`${CONFIG.API_BASE_URL}/tournaments/${tournamentId}/`, { method: 'DELETE' });
+            await loadTournaments();
+            showSuccess('Турнір видалено!');
+        } catch (error) {
+            showError('Помилка видалення: ' + error.message);
+        }
     });
 };
 

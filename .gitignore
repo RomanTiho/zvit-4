@@ -1,0 +1,57 @@
+# ── Python ───────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ── Virtual Environment ───────────────────────────────────
+venv/
+env/
+.venv/
+ENV/
+
+# ── Django ────────────────────────────────────────────────
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+
+# ── Environment / Secrets ─────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── IDE / Editor ──────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ── Node / Frontend ───────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# ── Migrations (опціонально — зазвичай зберігають) ────────
+# my_app/migrations/
+
+# ── Temp / Test scripts ───────────────────────────────────
+create_test_match.py
+/tmp/
+*.tmp
+
+# ── Coverage / Testing ────────────────────────────────────
+htmlcov/
+.coverage
+.tox/
+.pytest_cache/

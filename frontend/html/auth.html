@@ -5,8 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Вхід / Реєстрація - FootballHub</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="toast.css">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/toast.css">
     <style>
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -205,7 +206,7 @@
     <nav class="navbar">
         <div class="container">
             <div class="nav-content">
-                <a href="index.html" class="logo">
+                <a href="/index.html" class="logo">
                     <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
                         <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="2" />
                         <path d="M16 2C16 2 10 8 10 16C10 24 16 30 16 30" stroke="currentColor" stroke-width="2" />
@@ -214,12 +215,31 @@
                     </svg>
                     <span>FootballHub</span>
                 </a>
-                <ul class="nav-links">
-                    <li><a href="index.html">Головна</a></li>
-                    <li><a href="tournaments.html">Турніри</a></li>
-                    <li><a href="players.html">Рейтинг</a></li>
-                    <li><a href="auth.html" class="active">Вхід</a></li>
+                <ul class="nav-links" id="mainNavLinks">
+                    <li><a href="/index.html">Головна</a></li>
+                    <li><a href="/tournaments.html">Турніри</a></li>
+                    <li><a href="/players.html">Рейтинг</a></li>
+                    <li><a id="featuresLink" href="/index.html#features">Можливості</a></li>
                 </ul>
+                <div style="display: flex; gap: 1rem; align-items: center;" id="headerActions">
+                    <button class="btn btn-primary" id="createTournamentBtn" style="display:none">Створити
+                        турнір</button>
+                    <button class="btn btn-primary" id="registerTeamBtn" style="display:none">Зареєструвати
+                        команду</button>
+                    <button class="btn btn-secondary" id="adminLogoutBtn" style="display:none">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="margin-right: 0.5rem;">
+                            <path d="M6 14H3C2.5 14 2 13.5 2 13V3C2 2.5 2.5 2 3 2H6" stroke="currentColor"
+                                stroke-width="1.5" stroke-linecap="round" />
+                            <path d="M11 11L14 8L11 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                            <path d="M14 8H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                        </svg>
+                        Вийти з адміна
+                    </button>
+                </div>
+
+                <!-- Auth navigation container to be populated by auth-nav.js -->
+                <div class="auth-nav-container" id="authNavContainer"></div>
             </div>
         </div>
     </nav>
@@ -255,6 +275,11 @@
                 <button type="submit" class="submit-btn">
                     🚀 Увійти в систему
                 </button>
+                <p style="text-align:center; margin-top:1rem;">
+                    <a href="#" id="forgotPasswordLink" style="color:#667eea; font-size:.9rem;">
+                        🔑 Забули пароль?
+                    </a>
+                </p>
             </form>
 
             <!-- Register Form -->
@@ -309,11 +334,38 @@
                     ✨ Створити акаунт
                 </button>
             </form>
+            <!-- Forgot Password Form -->
+            <form id="resetForm" class="auth-form">
+                <p style="color:#555; margin-bottom:1.5rem; line-height:1.6;">
+                    Введіть ваше ім’я користувача та новий пароль.
+                </p>
+                <div class="form-group">
+                    <label for="resetUsername">👤 Ім’я користувача</label>
+                    <input type="text" id="resetUsername" placeholder="Ваш логін" required>
+                </div>
+                <div class="form-group">
+                    <label for="resetNewPassword">🔒 Новий пароль</label>
+                    <input type="password" id="resetNewPassword" placeholder="Мінімум 8 символів" required>
+                </div>
+                <div class="form-group">
+                    <label for="resetConfirmPassword">🔒 Підтвердження паролю</label>
+                    <input type="password" id="resetConfirmPassword" placeholder="Повторіть пароль" required>
+                </div>
+                <button type="submit" class="submit-btn">
+                    🔒 Змінити пароль
+                </button>
+                <p style="text-align:center; margin-top:1rem;">
+                    <a href="#" id="backToLoginLink" style="color:#667eea; font-size:.9rem;">
+                        ← Повернутись до входу
+                    </a>
+                </p>
+            </form>
         </div>
     </div>
 
-    <script src="toast.js"></script>
-    <script src="api-client.js"></script>
+    <script src="/static/js/toast.js"></script>
+    <script src="/static/js/config.js"></script>
+    <script src="/static/js/api-client.js"></script>
     <script>
         // Показати помилку профілю якщо є
         const profileError = sessionStorage.getItem('profile_error');
@@ -325,18 +377,31 @@
         }
 
         // Tab switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            const tab = document.querySelector(`.auth-tab[data-tab="${tabName}"]`);
+            if (tab) tab.classList.add('active');
+            const form = document.getElementById(tabName + 'Form');
+            if (form) form.classList.add('active');
+        }
+
         document.querySelectorAll('.auth-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                const tabName = tab.dataset.tab;
+            tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+        });
 
-                // Update tabs
-                document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
+        // Forgot password link
+        document.getElementById('forgotPasswordLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            document.getElementById('resetForm').classList.add('active');
+        });
 
-                // Update forms
-                document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
-                document.getElementById(tabName + 'Form').classList.add('active');
-            });
+        // Back to login
+        document.getElementById('backToLoginLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            switchTab('login');
         });
 
         // Login
@@ -351,7 +416,7 @@
             const password = document.getElementById('loginPassword').value;
 
             try {
-                const response = await fetch('http://localhost:8001/api/token/', {
+                const response = await fetch(`${CONFIG.API_BASE_URL}/token/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -408,7 +473,7 @@
             }
 
             try {
-                const response = await fetch('http://localhost:8001/api/auth/register/', {
+                const response = await fetch(`${CONFIG.API_BASE_URL}/auth/register/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -447,6 +512,45 @@
                 showToast('❌ ' + error.message, 'error');
                 submitBtn.disabled = false;
                 submitBtn.textContent = '✨ Створити акаунт';
+            }
+        });
+
+        // Reset password
+        document.getElementById('resetForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitBtn = e.target.querySelector('.submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Збереження...';
+
+            const username = document.getElementById('resetUsername').value;
+            const new_password = document.getElementById('resetNewPassword').value;
+            const confirm_password = document.getElementById('resetConfirmPassword').value;
+
+            try {
+                const response = await fetch(`${CONFIG.API_BASE_URL}/auth/reset_password/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, new_password, confirm_password })
+                });
+
+                let data;
+                try {
+                    data = await response.json();
+                } catch (e) {
+                    throw new Error('Помилка з\'єднання з сервером (Неможливо обробити відповідь)');
+                }
+
+                if (!response.ok) throw new Error(data.error || 'Помилка зміни пароля');
+
+                showToast('✅ Пароль успішно змінено! Тепер увійдіть.', 'success');
+                e.target.reset();
+                setTimeout(() => switchTab('login'), 2000);
+
+            } catch (error) {
+                showToast('❌ ' + error.message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '🔒 Змінити пароль';
             }
         });
 

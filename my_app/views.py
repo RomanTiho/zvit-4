@@ -14,9 +14,35 @@ from .serializers import (
     PlayerRatingHistorySerializer,
     UserRegisterSerializer,
     UserProfileSerializer,
-    UserUpdateSerializer
+    UserUpdateSerializer,
+    TournamentSerializer,
+    TeamSerializer,
+    StandingSerializer,
+    MatchSerializer
 )
+from .models import Player, PlayerStats, Tournament, Team, Standing, Match
 from .services import PlayerRatingService
+
+class TournamentViewSet(viewsets.ModelViewSet):
+    queryset = Tournament.objects.prefetch_related('teams', 'standings', 'matches')
+    serializer_class = TournamentSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+class TeamViewSet(viewsets.ModelViewSet):
+    queryset = Team.objects.all()
+    serializer_class = TeamSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+class StandingViewSet(viewsets.ModelViewSet):
+    queryset = Standing.objects.all()
+    serializer_class = StandingSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+class MatchViewSet(viewsets.ModelViewSet):
+    queryset = Match.objects.all()
+    serializer_class = MatchSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
 
 
 class AuthViewSet(viewsets.ViewSet):
@@ -48,7 +74,33 @@ class AuthViewSet(viewsets.ViewSet):
             }, status=status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
+    @action(detail=False, methods=['post'], permission_classes=[AllowAny])
+    def reset_password(self, request):
+        """Скидання пароля за username"""
+        username = request.data.get('username', '').strip()
+        new_password = request.data.get('new_password', '')
+        confirm_password = request.data.get('confirm_password', '')
+
+        if not username or not new_password:
+            return Response({'error': "Вкажіть ім'я користувача та новий пароль"},
+                            status=status.HTTP_400_BAD_REQUEST)
+        if new_password != confirm_password:
+            return Response({'error': 'Паролі не співпадають'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        if len(new_password) < 8:
+            return Response({'error': 'Пароль має містити щонайменше 8 символів'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            return Response({'error': 'Користувача з таким іменем не знайдено'},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        user.set_password(new_password)
+        user.save()
+        return Response({'message': 'Пароль успішно змінено'}, status=status.HTTP_200_OK)
+
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def me(self, request):
         """Отримати поточного користувача"""
@@ -204,3 +256,39 @@ class PlayerStatsViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(match_id=match_id)
         
         return queryset
+
+
+# ===== UPL Squad Views =====
+from .upl_service import get_squad, UPL_TEAM_IDS
+from rest_framework.decorators import api_view, permission_classes
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def upl_squad_view(request, team_name):
+    """
+    GET /api/upl/squad/<team_name>/
+    Returns squad data for the given UPL team name.
+    Uses 24-hour SQLite cache to minimise API calls.
+    """
+    result = get_squad(team_name)
+    return Response(result)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def upl_sync_view(request):
+    """
+    POST /api/upl/sync/
+    Force-refresh all UPL team squads from API (admin only).
+    """
+    if not request.user.is_staff:
+        return Response({'detail': 'Тільки адміністратори.'}, status=status.HTTP_403_FORBIDDEN)
+
+    results = {}
+    for team_name in UPL_TEAM_IDS:
+        from .models import UPLSquadCache
+        UPLSquadCache.objects.filter(team_name=team_name).delete()
+        data = get_squad(team_name)
+        results[team_name] = {'players': len(data.get('players', [])), 'source': data.get('source')}
+
+    return Response({'synced': results})

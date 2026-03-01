@@ -5,8 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Рейтинг Гравців - FootballHub</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="toast.css">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/toast.css">
     <style>
         .leaderboard-container {
             max-width: 1200px;
@@ -185,25 +186,41 @@
 <body>
     <!-- Navigation -->
     <nav class="navbar">
-        <div class="container">
-            <div class="nav-content">
-                <a href="index.html" class="logo">
-                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                        <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="2" />
-                        <path d="M16 2C16 2 10 8 10 16C10 24 16 30 16 30" stroke="currentColor" stroke-width="2" />
-                        <path d="M16 2C16 2 22 8 22 16C22 24 16 30 16 30" stroke="currentColor" stroke-width="2" />
-                        <path d="M2 16H30" stroke="currentColor" stroke-width="2" />
+    <div class="container">
+        <div class="nav-content">
+            <a href="/index.html" class="logo">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                    <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="2" />
+                    <path d="M16 2C16 2 10 8 10 16C10 24 16 30 16 30" stroke="currentColor" stroke-width="2" />
+                    <path d="M16 2C16 2 22 8 22 16C22 24 16 30 16 30" stroke="currentColor" stroke-width="2" />
+                    <path d="M2 16H30" stroke="currentColor" stroke-width="2" />
+                </svg>
+                <span>FootballHub</span>
+            </a>
+            <ul class="nav-links" id="mainNavLinks">
+                <li><a href="/index.html">Головна</a></li>
+                <li><a href="/tournaments.html">Турніри</a></li>
+                <li><a href="/players.html">Рейтинг</a></li>
+                <li><a id="featuresLink" href="/index.html#features">Можливості</a></li>
+            </ul>
+            <div style="display: flex; gap: 1rem; align-items: center;" id="headerActions">
+                <button class="btn btn-primary" id="createTournamentBtn" style="display:none">Створити турнір</button>
+                <button class="btn btn-primary" id="registerTeamBtn" style="display:none">Зареєструвати команду</button>
+                <button class="btn btn-secondary" id="adminLogoutBtn" style="display:none">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="margin-right: 0.5rem;">
+                        <path d="M6 14H3C2.5 14 2 13.5 2 13V3C2 2.5 2.5 2 3 2H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                        <path d="M11 11L14 8L11 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M14 8H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
                     </svg>
-                    <span>FootballHub</span>
-                </a>
-                <ul class="nav-links">
-                    <li><a href="index.html">Головна</a></li>
-                    <li><a href="tournaments.html">Турніри</a></li>
-                    <li><a href="players.html" class="active">Рейтинг</a></li>
-                </ul>
+                    Вийти з адміна
+                </button>
             </div>
+            
+            <!-- Auth navigation container to be populated by auth-nav.js -->
+            <div class="auth-nav-container" id="authNavContainer"></div>
         </div>
-    </nav>
+    </div>
+</nav>
 
     <div class="leaderboard-container">
         <div class="leaderboard-header">
@@ -224,28 +241,20 @@
         </div>
     </div>
 
-    <script src="toast.js"></script>
-    <script src="auth-nav.js"></script>
-    <script src="api-client.js"></script>
+    <script src="/static/js/toast.js"></script>
+    <script src="/static/js/config.js"></script>
+    <script src="/static/js/auth-nav.js"></script>
+    <script src="/static/js/api-client.js"></script>
     <script>
-        // Поточний фільтр
         let currentPosition = null;
 
-        // Завантаження гравців
         async function loadPlayers(position = null) {
             const grid = document.getElementById('playersGrid');
             grid.innerHTML = '<div class="loading">Завантаження...</div>';
 
             try {
-                console.log('Fetching players with position:', position);
                 const response = await PlayersAPI.getLeaderboard(position, 50);
-                console.log('API Response:', response);
-
-                // Django REST Framework повертає paginated response
                 const players = response.results || response;
-                console.log('Players array:', players);
-                console.log('Players count:', players.length);
-
                 displayPlayers(players);
             } catch (error) {
                 console.error('Error loading players:', error);
@@ -254,7 +263,6 @@
             }
         }
 
-        // Відображення гравців
         function displayPlayers(players) {
             const grid = document.getElementById('playersGrid');
 
@@ -268,7 +276,7 @@
                     <div class="player-header">
                         <div class="player-info">
                             <div class="player-name">${capitalizeFullName(player.username)}</div>
-                            <div class="player-number">№ ${getJerseyNumber(player)}</div>
+                            <div class="player-number">№ ${player.jersey_number || '-'}</div>
                             <div class="player-position">${getPositionName(player.position)}</div>
                         </div>
                         <div class="player-rank">#${index + 1}</div>
@@ -288,21 +296,13 @@
             `).join('');
         }
 
-        // Get jersey number based on position
-        function getJerseyNumber(player) {
-            // Використовувати номер гравця з бази даних
-            return player.jersey_number || '-';
-        }
-
-        // Capitalize full name
         function capitalizeFullName(name) {
-            return name.replace(/_/g, ' ')  // Замінити _ на пробіли
+            return name.replace(/_/g, ' ')
                 .split(' ')
                 .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
                 .join(' ');
         }
 
-        // Назва позиції
         function getPositionName(position) {
             const positions = {
                 'GK': 'Воротар',
@@ -313,21 +313,16 @@
             return positions[position] || position;
         }
 
-        // Фільтри
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                // Оновити активну кнопку
                 document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-
-                // Завантажити гравців
                 const position = btn.dataset.position;
                 currentPosition = position === 'all' ? null : position;
                 loadPlayers(currentPosition);
             });
         });
 
-        // Завантажити при старті
         loadPlayers();
     </script>
 </body>
