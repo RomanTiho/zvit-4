@@ -1,60 +1,5 @@
 // ===== Tournaments Page JavaScript =====
-let map = null;
-let markers = [];
-
-const CITY_COORDS = {
-    'київ': [50.4501, 30.5234],
-    'львів': [49.8397, 24.0297],
-    'харків': [49.9935, 36.2304],
-    'одеса': [46.4825, 30.7233],
-    'дніпро': [48.4647, 35.0461]
-};
-
-function getCoords(locationStr) {
-    if (!locationStr) return [48.3794, 31.1656];
-    const locLower = locationStr.toLowerCase();
-    for (const city in CITY_COORDS) {
-        if (locLower.includes(city)) return CITY_COORDS[city];
-    }
-    // Random jitter around center for unknown locations to prevent overlapping
-    return [48.3794 + (Math.random() - 0.5) * 2, 31.1656 + (Math.random() - 0.5) * 2];
-}
-
-function updateMap(tournaments) {
-    if (!document.getElementById('tournamentsMap')) return;
-
-    if (!map) {
-        map = L.map('tournamentsMap').setView([48.3794, 31.1656], 5);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
-    }
-
-    // Clear old markers
-    markers.forEach(m => map.removeLayer(m));
-    markers = [];
-
-    tournaments.forEach(t => {
-        const coords = getCoords(t.location);
-        const marker = L.marker(coords).addTo(map);
-
-        // Popup content
-        const popupContent = `
-            <div style="text-align: center; min-width: 150px;">
-                <strong style="font-size: 14px; color: var(--primary);">${t.name}</strong><br>
-                <div style="margin: 5px 0; font-size: 12px;">${t.location}</div>
-                <a href="tournament-detail.html?id=${t.id}" style="display: inline-block; margin-top: 5px; padding: 4px 8px; background: var(--primary); color: white; border-radius: 4px; text-decoration: none; font-size: 12px;">Перейти до турніру</a>
-            </div>
-        `;
-        marker.bindPopup(popupContent);
-        markers.push(marker);
-    });
-
-    if (markers.length > 0) {
-        const group = new L.featureGroup(markers);
-        map.fitBounds(group.getBounds().pad(0.2));
-    }
-}
+// Map removed
 
 // ===== Render Tournaments Grid =====
 function renderTournaments(tournaments) {
@@ -120,9 +65,6 @@ function renderTournaments(tournaments) {
             </div>
         </div>
     `).join('');
-
-    // Update map with displayed tournaments
-    updateMap(tournaments);
 }
 
 // ===== Filter Tournaments =====
@@ -202,10 +144,10 @@ function handleCreateTournament(e) {
         contactEmail: document.getElementById('contactEmail').value,
         contactPhone: document.getElementById('contactPhone').value,
         tournamentName: document.getElementById('tournamentName').value,
-        startDate: document.getElementById('startDate').value,
-        endDate: document.getElementById('endDate').value,
+        start_date: document.getElementById('startDate').value,
+        end_date: document.getElementById('endDate').value,
         format: document.getElementById('format').value,
-        maxTeams: parseInt(document.getElementById('maxTeams').value),
+        max_teams: parseInt(document.getElementById('maxTeams').value),
         location: document.getElementById('location').value,
         description: document.getElementById('description').value || 'Немає додаткової інформації',
         submittedAt: new Date().toISOString(),

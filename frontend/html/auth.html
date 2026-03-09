@@ -307,15 +307,7 @@
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="regPosition">⚽ Позиція на полі</label>
-                    <select id="regPosition">
-                        <option value="MID">Півзахисник (MID)</option>
-                        <option value="FWD">Нападник (FWD)</option>
-                        <option value="DEF">Захисник (DEF)</option>
-                        <option value="GK">Воротар (GK)</option>
-                    </select>
-                </div>
+
 
                 <div class="form-group">
                     <label for="regPassword">🔒 Пароль *</label>
@@ -461,7 +453,6 @@
             const email = document.getElementById('regEmail').value;
             const first_name = document.getElementById('regFirstName').value;
             const last_name = document.getElementById('regLastName').value;
-            const position = document.getElementById('regPosition').value;
             const password = document.getElementById('regPassword').value;
             const password2 = document.getElementById('regPassword2').value;
 
@@ -483,7 +474,6 @@
                         email,
                         first_name,
                         last_name,
-                        position,
                         password,
                         password2
                     })

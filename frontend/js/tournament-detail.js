@@ -91,8 +91,8 @@ function renderStandings() {
     // Sort by points, then goal difference
     const sortedStandings = [...currentTournament.standings].sort((a, b) => {
         if (b.points !== a.points) return b.points - a.points;
-        const diffA = a.goalsFor - a.goalsAgainst;
-        const diffB = b.goalsFor - b.goalsAgainst;
+        const diffA = a.goals_for - a.goals_against;
+        const diffB = b.goals_for - b.goals_against;
         return diffB - diffA;
     });
 
@@ -108,19 +108,19 @@ function renderStandings() {
             positionBadge = `<span class="position-badge bronze">${position}</span>`;
         }
 
-        const goalDiff = team.goalsFor - team.goalsAgainst;
+        const goalDiff = team.goals_for - team.goals_against;
         const diffDisplay = goalDiff > 0 ? `+${goalDiff}` : goalDiff;
 
         return `
             <tr>
                 <td>${positionBadge}</td>
-                <td style="font-weight: 600;">${team.teamName}</td>
+                <td style="font-weight: 600;">${team.team_name}</td>
                 <td>${team.played}</td>
                 <td>${team.won}</td>
                 <td>${team.drawn}</td>
                 <td>${team.lost}</td>
-                <td>${team.goalsFor}</td>
-                <td>${team.goalsAgainst}</td>
+                <td>${team.goals_for}</td>
+                <td>${team.goals_against}</td>
                 <td style="font-weight: 600; color: ${goalDiff >= 0 ? 'var(--success)' : 'var(--error)'};">${diffDisplay}</td>
                 <td style="font-weight: 700; font-size: var(--font-size-lg);">${team.points}</td>
             </tr>
@@ -145,7 +145,7 @@ function renderMatches() {
     matchesList.innerHTML = currentTournament.matches.map(match => {
         const isCompleted = match.status === 'completed';
         const scoreDisplay = isCompleted
-            ? `${match.homeScore} : ${match.awayScore}`
+            ? `${match.home_score} : ${match.away_score}`
             : 'VS';
 
         return `
@@ -153,11 +153,11 @@ function renderMatches() {
                 <div class="match-date">${formatDateTime(match.date)}</div>
                 <div class="match-teams">
                     <div class="team home">
-                        <span class="team-name">${match.homeTeam}</span>
+                        <span class="team-name">${match.home_team}</span>
                     </div>
                     <div class="match-score">${scoreDisplay}</div>
                     <div class="team away">
-                        <span class="team-name">${match.awayTeam}</span>
+                        <span class="team-name">${match.away_team}</span>
                     </div>
                 </div>
             </div>
@@ -182,7 +182,7 @@ function renderTeams() {
     const adminMode = isAdmin();
 
     teamsList.innerHTML = currentTournament.teams.map(team => {
-        const rosterHtml = (team.playerRoster && team.playerRoster.length > 0)
+        const rosterHtml = (team.player_roster && team.player_roster.length > 0)
             ? `<div class="team-roster">
                 <div class="roster-section-header">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -191,10 +191,10 @@ function renderTeams() {
                         <path d="M1 14c0-2.2 1.8-4 4-4s4 1.8 4 4" stroke="currentColor" stroke-width="1.5"/>
                         <path d="M12 10.2c2 0.4 3 1.8 3 3.8" stroke="currentColor" stroke-width="1.5"/>
                     </svg>
-                    <strong>Склад гравців (${team.playerRoster.length})</strong>
+                    <strong>Склад гравців (${team.player_roster.length})</strong>
                 </div>
                 <div class="roster-player-list">
-                    ${team.playerRoster.map((name, i) => `
+                    ${team.player_roster.map((name, i) => `
                         <div class="roster-player-item${adminMode ? ' roster-admin' : ''}">
                             <span class="roster-player-num">${i + 1}</span>
                             <span class="roster-player-name">${name}</span>
@@ -213,7 +213,7 @@ function renderTeams() {
                     <rect x="2" y="4" width="14" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/>
                     <path d="M2 7H16M6 2V6M12 2V6" stroke="currentColor" stroke-width="1.5"/>
                 </svg>
-                <span><strong>Гравців:</strong> ${team.players}</span>
+                <span><strong>Гравців:</strong> ${team.players_count}</span>
             </div>`;
 
         return `<div class="tournament-card" data-live-team="${team.id}">

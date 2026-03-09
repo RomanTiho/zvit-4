@@ -3,6 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
 from rest_framework.views import APIView
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
 from django.db.models import Q
@@ -118,6 +119,36 @@ class AuthViewSet(viewsets.ViewSet):
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated],
+            parser_classes=[MultiPartParser, FormParser])
+    def upload_avatar(self, request):
+        """Завантажити аватар тренера"""
+        if 'avatar' not in request.FILES:
+            return Response({'error': 'Файл не знайдено. Передайте поле avatar.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        file = request.FILES['avatar']
+        # Перевірка типу файлу
+        if not file.content_type.startswith('image/'):
+            return Response({'error': 'Дозволені лише зображення.'}, status=status.HTTP_400_BAD_REQUEST)
+        # Обмеження розміру — 5 МБ
+        if file.size > 5 * 1024 * 1024:
+            return Response({'error': 'Розмір файлу не може перевищувати 5 МБ.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            player = request.user.player
+        except Player.DoesNotExist:
+            player = Player.objects.create(user=request.user, position='MID')
+
+        # Видалити старий аватар якщо є
+        if player.avatar:
+            player.avatar.delete(save=False)
+
+        player.avatar = file
+        player.save()
+
+        avatar_url = request.build_absolute_uri(player.avatar.url)
+        return Response({'avatar_url': avatar_url}, status=status.HTTP_200_OK)
+
     @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
     def logout(self, request):
         """Вихід з системи (blacklist refresh token)"""

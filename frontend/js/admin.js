@@ -242,7 +242,7 @@ function loadRequests() {
 }
 
 // Create tournament from request
-window.createFromRequest = function (requestId) {
+window.createFromRequest = async function (requestId) {
     const requests = Storage.load('tournamentRequests') || [];
     const request = requests.find(r => r.id === requestId);
 
@@ -251,35 +251,28 @@ window.createFromRequest = function (requestId) {
         return;
     }
 
-    showConfirm(`Створити турнір "${request.tournamentName}"?`, () => {
+    showConfirm(`Створити турнір "${request.tournamentName}"?`, async () => {
         const newTournament = {
-            id: Date.now(),
             name: request.tournamentName,
-            startDate: request.start_date,
-            endDate: request.end_date,
+            start_date: request.start_date || request.startDate,
+            end_date: request.end_date || request.endDate,
             format: request.format,
-            maxTeams: parseInt(request.max_teams),
+            max_teams: parseInt(request.max_teams || request.maxTeams),
             location: request.location,
             description: request.description,
-            status: 'upcoming',
-            teams: [],
-            standings: [],
-            matches: []
+            status: 'upcoming'
         };
 
-        // Add tournament
-        AppState.tournaments.push(newTournament);
-        Storage.save('tournaments', AppState.tournaments);
-
-        // Remove request
-        const updatedRequests = requests.filter(r => r.id !== requestId);
-        Storage.save('tournamentRequests', updatedRequests);
-
-        // Reload
-        loadRequests();
-        loadTournaments();
-
-        showSuccess('Турнір успішно створено!');
+        try {
+            await TournamentsAPI.createTournament(newTournament);
+            const updatedRequests = requests.filter(r => r.id !== requestId);
+            Storage.save('tournamentRequests', updatedRequests);
+            loadRequests();
+            await loadTournaments();
+            showSuccess('Турнір успішно створено!');
+        } catch (error) {
+            showError('Помилка створення: ' + error.message);
+        }
     });
 };
 
@@ -295,22 +288,18 @@ window.deleteRequest = function (requestId) {
 };
 
 // Handle admin create tournament
-function handleAdminCreateTournament(e) {
+async function handleAdminCreateTournament(e) {
     e.preventDefault();
 
     const formData = {
-        id: Date.now(),
         name: document.getElementById('adminTournamentName').value,
-        startDate: document.getElementById('adminStartDate').value,
-        endDate: document.getElementById('adminEndDate').value,
+        start_date: document.getElementById('adminStartDate').value,
+        end_date: document.getElementById('adminEndDate').value,
         format: document.getElementById('adminFormat').value,
-        maxTeams: parseInt(document.getElementById('adminMaxTeams').value),
+        max_teams: parseInt(document.getElementById('adminMaxTeams').value),
         location: document.getElementById('adminLocation').value,
         description: document.getElementById('adminDescription').value,
-        status: 'upcoming',
-        teams: [],
-        standings: [],
-        matches: []
+        status: 'upcoming'
     };
 
     // Validate dates
@@ -319,18 +308,15 @@ function handleAdminCreateTournament(e) {
         return;
     }
 
-    // Add to tournaments
-    AppState.tournaments.push(formData);
-    Storage.save('tournaments', AppState.tournaments);
-
-    // Reset form
-    e.target.reset();
-
-    // Show success message
-    showSuccess('Турнір успішно створено!');
-
-    // Switch to tournaments tab
-    switchTab('tournaments');
+    try {
+        await TournamentsAPI.createTournament(formData);
+        showSuccess('Турнір успішно створено!');
+        e.target.reset();
+        await loadTournaments();
+        switchTab('tournaments');
+    } catch (error) {
+        showError('Помилка при створенні турніру: ' + error.message);
+    }
 }
 
 // Load all tournaments
