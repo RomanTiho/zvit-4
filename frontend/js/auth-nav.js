@@ -1,8 +1,8 @@
 // Auth Navigation Helper
 // Додає динамічну навігацію для авторизації на всіх сторінках
 
-function initAuthNav() {
-    const token = localStorage.getItem('access_token');
+async function initAuthNav() {
+    const token = sessionStorage.getItem('access_token');
     const navContent = document.querySelector('.nav-content');
 
     if (!navContent) return;
@@ -26,10 +26,32 @@ function initAuthNav() {
     authContainer.innerHTML = '';
 
     if (token) {
-        // Показати кнопку Створити турнір на сторінці турнірів
-        if (window.location.pathname.includes('tournaments.html') || path === '/') {
-            const createBtn = document.getElementById('createTournamentBtn');
-            if (createBtn) createBtn.style.display = 'block';
+        // Перевіряємо роль через API
+        let isCoach = false;
+        let isStaff = false;
+        try {
+            const apiUrl = (typeof CONFIG !== 'undefined') ? CONFIG.API_BASE_URL : '/api';
+            const meRes = await fetch(`${apiUrl}/auth/me/`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (meRes.ok) {
+                const me = await meRes.json();
+                isCoach = !!me.is_coach;
+                isStaff = !!me.is_staff;
+                // Кешуємо для admin.js
+                localStorage.setItem('admin_is_coach', isCoach ? 'true' : 'false');
+                localStorage.setItem('admin_is_staff', isStaff ? 'true' : 'false');
+            }
+        } catch (e) {
+            console.warn('Cannot fetch user role', e);
+        }
+
+        // Показати кнопку "Створити турнір" тільки тренерам і адмінам
+        if (isCoach || isStaff) {
+            if (window.location.pathname.includes('tournaments.html') || path === '/') {
+                const createBtn = document.getElementById('createTournamentBtn');
+                if (createBtn) createBtn.style.display = 'block';
+            }
         }
 
         // Користувач увійшов - показати кнопку Профілю
@@ -51,6 +73,7 @@ function initAuthNav() {
 
         authContainer.appendChild(profileBtn);
         authContainer.appendChild(logoutBtn);
+
     } else {
         // Користувач не увійшов - показати кнопку Входу
         const loginBtn = document.createElement('button');
@@ -65,8 +88,8 @@ function initAuthNav() {
 }
 
 async function logout() {
-    const token = localStorage.getItem('access_token');
-    const refreshToken = localStorage.getItem('refresh_token');
+    const token = sessionStorage.getItem('access_token');
+    const refreshToken = sessionStorage.getItem('refresh_token');
 
     try {
         await fetch(`${CONFIG.API_BASE_URL}/auth/logout/`, {
@@ -81,8 +104,8 @@ async function logout() {
         console.error('Logout error:', error);
     }
 
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
+    sessionStorage.removeItem('access_token');
+    sessionStorage.removeItem('refresh_token');
 
     if (typeof showToast === 'function') {
         showToast('Ви вийшли з системи', 'success');

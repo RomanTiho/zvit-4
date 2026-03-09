@@ -1,8 +1,7 @@
 // Admin Panel JavaScript
 
-// Admin password (in production, this should be handled server-side)
-const ADMIN_PASSWORD = 'admin123';
 const AUTH_KEY = 'footballhub_admin_auth';
+const API_URL = (typeof CONFIG !== 'undefined' && CONFIG.API_BASE_URL) ? CONFIG.API_BASE_URL : '/api';
 
 // Check authentication on page load
 document.addEventListener('DOMContentLoaded', function () {
@@ -12,13 +11,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Check if admin is authenticated
 function checkAuthentication() {
-    const isAuthenticated = sessionStorage.getItem(AUTH_KEY) === 'true';
+    // Перевіряємо JWT і роль
+    const token = sessionStorage.getItem('access_token');
+    const isCoach = localStorage.getItem('admin_is_coach') === 'true';
+    const isStaff = localStorage.getItem('admin_is_staff') === 'true';
 
-    if (isAuthenticated) {
+    if (token && (isCoach || isStaff)) {
         showAdminPanel();
         loadRequests();
         loadTournaments();
     } else {
+        // Видаляємо застарілий стан
+        sessionStorage.removeItem(AUTH_KEY);
         showLoginSection();
     }
 }
@@ -85,22 +89,67 @@ function setupEventListeners() {
 }
 
 // Handle login
-function handleLogin(e) {
+async function handleLogin(e) {
     e.preventDefault();
 
+    const username = document.getElementById('adminUsername') 
+        ? document.getElementById('adminUsername').value 
+        : document.getElementById('adminPassword').dataset.username || '';
     const password = document.getElementById('adminPassword').value;
 
-    if (password === ADMIN_PASSWORD) {
+    if (!password) {
+        showError('Вкажіть пароль!');
+        return;
+    }
+
+    try {
+        // Крок 1: Отримати JWT токен
+        const tokenRes = await fetch(`${API_URL}/token/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+
+        if (!tokenRes.ok) {
+            showError('Невірний логін або пароль!');
+            document.getElementById('adminPassword').value = '';
+            return;
+        }
+
+        const tokens = await tokenRes.json();
+        sessionStorage.setItem('access_token', tokens.access);
+        sessionStorage.setItem('refresh_token', tokens.refresh);
+
+        // Крок 2: Перевірити роль користувача
+        const meRes = await fetch(`${API_URL}/auth/me/`, {
+            headers: { 'Authorization': `Bearer ${tokens.access}` }
+        });
+
+        if (!meRes.ok) throw new Error('Cannot fetch user');
+
+        const me = await meRes.json();
+
+        if (!me.is_coach && !me.is_staff) {
+            showError('Доступ заборонено. Ту панель доступна тільки для тренерів і адміністраторів.');
+            sessionStorage.removeItem('access_token');
+            sessionStorage.removeItem('refresh_token');
+            return;
+        }
+
+        // Зберігаємо роль для відображення в КІ
+        localStorage.setItem('admin_is_coach', me.is_coach ? 'true' : 'false');
+        localStorage.setItem('admin_is_staff', me.is_staff ? 'true' : 'false');
+        localStorage.setItem('admin_username', me.username || username);
+
         sessionStorage.setItem(AUTH_KEY, 'true');
         showAdminPanel();
         loadRequests();
         loadTournaments();
-
-        // Show welcome message
         showWelcomeMessage();
-    } else {
-        showError('Невірний пароль! Спробуйте ще раз.');
-        document.getElementById('adminPassword').value = '';
+
+    } catch (err) {
+        console.error(err);
+        showError('Помилка під час авторизації. Спробуйте ще раз.');
     }
 }
 

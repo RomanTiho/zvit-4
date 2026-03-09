@@ -236,7 +236,7 @@
     <script>
         // Показати кнопки "Створити турнір" тільки авторизованим користувачам
         (function () {
-            const isLoggedIn = !!localStorage.getItem('access_token');
+            const isLoggedIn = !!sessionStorage.getItem('access_token');
             if (isLoggedIn) {
                 ['createTournamentBtn', 'heroCreateBtn', 'ctaCreateBtn'].forEach(id => {
                     const el = document.getElementById(id);

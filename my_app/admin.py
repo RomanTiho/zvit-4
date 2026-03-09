@@ -1,5 +1,27 @@
 from django.contrib import admin
-from .models import Player, PlayerStats, PlayerRatingHistory, Tournament, Team, Standing, Match
+from django.contrib.auth.models import User
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from .models import Player, PlayerStats, PlayerRatingHistory, Tournament, Team, Standing, Match, UserProfile
+
+
+class UserAdmin(BaseUserAdmin):
+    """Стандартна адмінка User з групами"""
+    pass
+
+# Перереєстрація User (стандартна адмінка вже підтримує групи)
+admin.site.unregister(User)
+admin.site.register(User, UserAdmin)
+
+
+@admin.register(UserProfile)
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ('user', 'get_groups')
+    search_fields = ('user__username', 'user__email')
+
+    def get_groups(self, obj):
+        return ', '.join(obj.user.groups.values_list('name', flat=True)) or 'Користувач'
+    get_groups.short_description = 'Ролі'
+
 
 @admin.register(Tournament)
 class TournamentAdmin(admin.ModelAdmin):

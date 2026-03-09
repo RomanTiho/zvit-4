@@ -13,11 +13,8 @@ function renderTournaments(tournaments) {
                     Турнірів не знайдено
                 </h3>
                 <p style="color: var(--dark-500); margin-bottom: var(--spacing-lg);">
-                    Спробуйте змінити фільтри або створіть новий турнір
+                    Спробуйте змінити фільтри або зверніться до тренера для створення турніру
                 </p>
-                <button class="btn btn-primary" onclick="openModal('createTournamentModal')">
-                    Створити турнір
-                </button>
             </div>
         `;
         return;

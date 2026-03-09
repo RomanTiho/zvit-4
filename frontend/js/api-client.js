@@ -6,7 +6,7 @@ class APIClient {
      * Внутрішній метод для виконання fetch-запитів з обробкою токенів
      */
     static async _fetch(url, options = {}) {
-        let token = localStorage.getItem('access_token');
+        let token = sessionStorage.getItem('access_token');
         options.headers = options.headers || {};
         if (token) {
             options.headers['Authorization'] = `Bearer ${token}`;
@@ -15,33 +15,33 @@ class APIClient {
         let response = await fetch(url, options);
 
         // Якщо токен протух (401), спробуємо оновити
-        if (response.status === 401 && localStorage.getItem('refresh_token')) {
+        if (response.status === 401 && sessionStorage.getItem('refresh_token')) {
             try {
                 const refreshResponse = await fetch(`${API_BASE_URL}/token/refresh/`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ refresh: localStorage.getItem('refresh_token') })
+                    body: JSON.stringify({ refresh: sessionStorage.getItem('refresh_token') })
                 });
 
                 if (refreshResponse.ok) {
                     const data = await refreshResponse.json();
-                    localStorage.setItem('access_token', data.access);
-                    if (data.refresh) localStorage.setItem('refresh_token', data.refresh);
+                    sessionStorage.setItem('access_token', data.access);
+                    if (data.refresh) sessionStorage.setItem('refresh_token', data.refresh);
 
                     // Повторюємо оригінальний запит з новим токеном
                     options.headers['Authorization'] = `Bearer ${data.access}`;
                     response = await fetch(url, options);
                 } else {
                     // Refresh токен протух або недійсний
-                    localStorage.removeItem('access_token');
-                    localStorage.removeItem('refresh_token');
+                    sessionStorage.removeItem('access_token');
+                    sessionStorage.removeItem('refresh_token');
                     window.location.href = '/auth.html';
                     throw new Error('Session expired');
                 }
             } catch (e) {
                 console.error('Token refresh failed', e);
-                localStorage.removeItem('access_token');
-                localStorage.removeItem('refresh_token');
+                sessionStorage.removeItem('access_token');
+                sessionStorage.removeItem('refresh_token');
                 window.location.href = '/auth.html';
                 throw e;
             }

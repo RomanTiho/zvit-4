@@ -76,13 +76,18 @@
                     </defs>
                 </svg>
                 <h1>Вхід до адмін-панелі</h1>
-                <p>Введіть пароль для доступу до управління турнірами</p>
+                <p>Увійдіть як тренер або адміністратор</p>
             </div>
             <form id="loginForm" class="admin-login-form">
                 <div class="form-group">
+                    <label for="adminUsername">Логін</label>
+                    <input type="text" id="adminUsername" class="form-control"
+                        placeholder="Введіть ваш логін" required>
+                </div>
+                <div class="form-group">
                     <label for="adminPassword">Пароль</label>
                     <input type="password" id="adminPassword" class="form-control"
-                        placeholder="Введіть пароль адміністратора" required>
+                        placeholder="Введіть пароль" required>
                 </div>
                 <button type="submit" class="btn btn-primary btn-block">
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -92,7 +97,6 @@
                     </svg>
                     Увійти
                 </button>
-                <p class="admin-hint">Пароль за замовчуванням: <code>admin123</code></p>
             </form>
         </div>
     </section>

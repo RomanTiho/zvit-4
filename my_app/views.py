@@ -1,13 +1,13 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny, BasePermission
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
 from django.db.models import Q
-from .models import Player, PlayerStats
+from .models import Player, PlayerStats, UserProfile
 from .serializers import (
     PlayerSerializer, 
     PlayerDetailSerializer,
@@ -21,18 +21,50 @@ from .serializers import (
     StandingSerializer,
     MatchSerializer
 )
-from .models import Player, PlayerStats, Tournament, Team, Standing, Match
+from .models import Player, PlayerStats, Tournament, Team, Standing, Match, UserProfile
 from .services import PlayerRatingService
+
+
+class IsCoach(BasePermission):
+    """Дозвіл тільки для членів групи Coach"""
+    message = 'Доступно тільки для тренерів.'
+
+    def has_permission(self, request, view):
+        return (
+            request.user and
+            request.user.is_authenticated and
+            request.user.groups.filter(name='Coach').exists()
+        )
+
+
+class IsAdminOrCoach(BasePermission):
+    """Дозвіл для адмінів або членів групи Coach"""
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
+        if request.user.is_staff:
+            return True
+        return request.user.groups.filter(name='Coach').exists()
+
 
 class TournamentViewSet(viewsets.ModelViewSet):
     queryset = Tournament.objects.prefetch_related('teams', 'standings', 'matches')
     serializer_class = TournamentSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [AllowAny()]
+        # Створення/редагування/видалення турніру — тільки адмін або тренер
+        return [IsAdminOrCoach()]
 
 class TeamViewSet(viewsets.ModelViewSet):
     queryset = Team.objects.all()
     serializer_class = TeamSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [AllowAny()]
+        return [IsAuthenticated()]
 
 class StandingViewSet(viewsets.ModelViewSet):
     queryset = Standing.objects.all()
@@ -135,18 +167,18 @@ class AuthViewSet(viewsets.ViewSet):
             return Response({'error': 'Розмір файлу не може перевищувати 5 МБ.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            player = request.user.player
-        except Player.DoesNotExist:
-            player = Player.objects.create(user=request.user, position='MID')
+            profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         # Видалити старий аватар якщо є
-        if player.avatar:
-            player.avatar.delete(save=False)
+        if profile.avatar:
+            profile.avatar.delete(save=False)
 
-        player.avatar = file
-        player.save()
+        profile.avatar = file
+        profile.save()
 
-        avatar_url = request.build_absolute_uri(player.avatar.url)
+        avatar_url = request.build_absolute_uri(profile.avatar.url)
         return Response({'avatar_url': avatar_url}, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])

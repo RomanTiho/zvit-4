@@ -423,8 +423,8 @@
                 const data = await response.json();
 
                 // Save tokens
-                localStorage.setItem('access_token', data.access);
-                localStorage.setItem('refresh_token', data.refresh);
+                sessionStorage.setItem('access_token', data.access);
+                sessionStorage.setItem('refresh_token', data.refresh);
 
                 showToast('✅ Успішний вхід!', 'success');
 
@@ -487,8 +487,8 @@
                 const data = await response.json();
 
                 // Save tokens
-                localStorage.setItem('access_token', data.tokens.access);
-                localStorage.setItem('refresh_token', data.tokens.refresh);
+                sessionStorage.setItem('access_token', data.tokens.access);
+                sessionStorage.setItem('refresh_token', data.tokens.refresh);
 
                 showToast('✅ Реєстрація успішна!', 'success');
 
@@ -545,7 +545,7 @@
         });
 
         // Check if already logged in
-        if (localStorage.getItem('access_token')) {
+        if (sessionStorage.getItem('access_token')) {
             window.location.href = 'profile.html';
         }
     </script>

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
-from .models import Player, PlayerStats, PlayerRatingHistory, Tournament, Team, Standing, Match
+from .models import Player, PlayerStats, PlayerRatingHistory, Tournament, Team, Standing, Match, UserProfile
 
 class TeamSerializer(serializers.ModelSerializer):
     class Meta:
@@ -59,8 +59,8 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         validated_data.pop('password2')
-        position = validated_data.pop('position', 'MID')  # Default position
-        
+        position = validated_data.pop('position', None)
+
         user = User.objects.create_user(
             username=validated_data['username'],
             email=validated_data['email'],
@@ -68,21 +68,38 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             last_name=validated_data['last_name'],
             password=validated_data['password']
         )
-        
-        # Автоматично створити профіль гравця
-        Player.objects.create(user=user, position=position)
-        
+
+        # UserProfile створюється автоматично через сигнал (is_coach=False за замовчуванням)
+        # Player профіль створюється тільки якщо позицію вказано (tобто користувач зареєструвався як гравець)
+        if position:
+            Player.objects.create(user=user, position=position)
+
         return user
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
     """Serializer для профілю користувача"""
     player = serializers.SerializerMethodField()
-    
+    is_coach = serializers.SerializerMethodField()
+    avatar = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'player']
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_coach', 'avatar', 'player']
         read_only_fields = ['username']
+
+    def get_is_coach(self, obj):
+        return obj.groups.filter(name='Coach').exists()
+
+    def get_avatar(self, obj):
+        try:
+            profile = obj.profile
+            if profile.avatar:
+                request = self.context.get('request')
+                return request.build_absolute_uri(profile.avatar.url) if request else profile.avatar.url
+        except Exception:
+            pass
+        return None
     
     def get_player(self, obj):
         try:
