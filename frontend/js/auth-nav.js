@@ -38,19 +38,23 @@ async function initAuthNav() {
                 const me = await meRes.json();
                 isCoach = !!me.is_coach;
                 isStaff = !!me.is_staff;
-                // Кешуємо для admin.js
-                localStorage.setItem('admin_is_coach', isCoach ? 'true' : 'false');
-                localStorage.setItem('admin_is_staff', isStaff ? 'true' : 'false');
+                // Кешуємо для admin.js (використовуємо sessionStorage для ізоляції вкладок)
+                sessionStorage.setItem('admin_is_coach', isCoach ? 'true' : 'false');
+                sessionStorage.setItem('admin_is_staff', isStaff ? 'true' : 'false');
             }
         } catch (e) {
             console.warn('Cannot fetch user role', e);
         }
 
-        // Показати кнопку "Створити турнір" тільки тренерам і адмінам
+        // Показати кнопку "Створити турнір" (турніри) та "Зареєструвати команду" (деталі турніру)
         if (isCoach || isStaff) {
             if (window.location.pathname.includes('tournaments.html') || path === '/') {
                 const createBtn = document.getElementById('createTournamentBtn');
                 if (createBtn) createBtn.style.display = 'block';
+            }
+            if (window.location.pathname.includes('tournament-detail.html')) {
+                const registerBtn = document.getElementById('registerTeamBtn');
+                if (registerBtn) registerBtn.style.display = 'block';
             }
         }
 

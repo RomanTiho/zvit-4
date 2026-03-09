@@ -5,21 +5,22 @@ const AppState = {
     currentTournament: null,
 };
 
-// ===== Local Storage Helper =====
+// ===== Local Storage Helper (Switched to Session Storage for tab isolation) =====
 const Storage = {
     save(key, data) {
-        localStorage.setItem(key, JSON.stringify(data));
+        sessionStorage.setItem(key, JSON.stringify(data));
     },
     load(key) {
-        const data = localStorage.getItem(key);
+        const data = sessionStorage.getItem(key);
         return data ? JSON.parse(data) : null;
     },
     clear(key) {
-        localStorage.removeItem(key);
+        sessionStorage.removeItem(key);
     }
 };
 
 // Data is now loaded dynamically from the backend
+
 
 // ===== Modal Management =====
 function openModal(modalId) {

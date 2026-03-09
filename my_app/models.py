@@ -227,6 +227,7 @@ class Tournament(models.Model):
 
 class Team(models.Model):
     tournament = models.ForeignKey(Tournament, related_name="teams", on_delete=models.CASCADE)
+    coach = models.ForeignKey(User, on_delete=models.CASCADE, related_name="teams_coached", null=True, blank=True)
     name = models.CharField(max_length=100)
     captain = models.CharField(max_length=100)
     email = models.EmailField()

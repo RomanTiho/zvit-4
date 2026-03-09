@@ -116,6 +116,23 @@ class TournamentsAPI {
     }
 }
 
+// API методи для команд
+class TeamsAPI {
+    /**
+     * Зареєструвати команду на турнір
+     */
+    static async registerTeam(teamData) {
+        return await APIClient.post('/teams/', teamData);
+    }
+    
+    /**
+     * Видалити команду з турніру
+     */
+    static async deleteTeam(teamId) {
+        return await APIClient.delete(`/teams/${teamId}/`);
+    }
+}
+
 // API методи для гравців
 class PlayersAPI {
     /**

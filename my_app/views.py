@@ -64,7 +64,11 @@ class TeamViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
             return [AllowAny()]
-        return [IsAuthenticated()]
+        return [IsAdminOrCoach()]
+
+    def perform_create(self, serializer):
+        # Автоматично зберігаємо поточного користувача як тренера команди
+        serializer.save(coach=self.request.user)
 
 class StandingViewSet(viewsets.ModelViewSet):
     queryset = Standing.objects.all()

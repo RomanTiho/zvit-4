@@ -324,7 +324,7 @@ function setupRegisterTeamModal() {
 }
 
 // ===== Handle Team Registration =====
-function handleRegisterTeam(e) {
+async function handleRegisterTeam(e) {
     e.preventDefault();
 
     if (playerRoster.length < 8) {
@@ -333,42 +333,38 @@ function handleRegisterTeam(e) {
     }
 
     const teamData = {
-        id: Date.now(),
+        tournament: currentTournament.id,
         name: document.getElementById('teamName').value,
         captain: document.getElementById('captainName').value,
         email: document.getElementById('captainEmail').value,
         phone: document.getElementById('captainPhone').value,
-        players: playerRoster.length,
-        playerRoster: [...playerRoster],
-        notes: document.getElementById('teamNotes').value
+        players_count: playerRoster.length,
+        player_roster: playerRoster
     };
 
-    // Check if team name already exists
-    if (currentTournament.teams.some(t => t.name.toLowerCase() === teamData.name.toLowerCase())) {
-        showError('Команда з такою назвою вже зареєстрована');
-        return;
+    try {
+        const response = await TeamsAPI.registerTeam(teamData);
+        
+        // Add team to current UI state temporarily or fetch again
+        if (!currentTournament.teams) currentTournament.teams = [];
+        currentTournament.teams.push(response);
+
+        // Reset form, roster and close modal
+        e.target.reset();
+        playerRoster = [];
+        renderPlayerRoster();
+        closeModal('registerTeamModal');
+
+        // Refresh display
+        renderTournamentHeader();
+        renderTeams();
+
+        // Show success message
+        showSuccess('Команду успішно зареєстровано на турнір!');
+    } catch (err) {
+        console.error('Failed to register team:', err);
+        showError(err.message || 'Помилка реєстрації команди. Можливо, така назва вже існує.');
     }
-
-    // Add team to tournament
-    currentTournament.teams.push(teamData);
-
-    // Update in storage
-    const tournamentIndex = AppState.tournaments.findIndex(t => t.id === currentTournament.id);
-    AppState.tournaments[tournamentIndex] = currentTournament;
-    Storage.save('tournaments', AppState.tournaments);
-
-    // Reset form, roster and close modal
-    e.target.reset();
-    playerRoster = [];
-    renderPlayerRoster();
-    closeModal('registerTeamModal');
-
-    // Refresh display
-    renderTournamentHeader();
-    renderTeams();
-
-    // Show success message
-    showSuccess('Команду успішно зареєстровано!');
 }
 
 // ===== Delete Team (Admin Only) =====
@@ -384,21 +380,23 @@ function deleteTeam(teamId) {
         return;
     }
 
-    showConfirm(`Ви впевнені, що хочете видалити команду "${team.name}"?`, () => {
-        // Remove team from tournament
-        currentTournament.teams = currentTournament.teams.filter(t => t.id !== teamId);
+    showConfirm(`Ви впевнені, що хочете видалити команду "${team.name}"?`, async () => {
+        try {
+            await TeamsAPI.deleteTeam(teamId);
+            
+            // Remove team from current UI state
+            currentTournament.teams = currentTournament.teams.filter(t => t.id !== teamId);
 
-        // Update in storage
-        const tournamentIndex = AppState.tournaments.findIndex(t => t.id === currentTournament.id);
-        AppState.tournaments[tournamentIndex] = currentTournament;
-        Storage.save('tournaments', AppState.tournaments);
+            // Refresh display
+            renderTournamentHeader();
+            renderTeams();
 
-        // Refresh display
-        renderTournamentHeader();
-        renderTeams();
-
-        // Show success message
-        showSuccess('Команду успішно видалено!');
+            // Show success message
+            showSuccess('Команду успішно видалено!');
+        } catch (err) {
+            console.error('Failed to delete team:', err);
+            showError('Помилка видалення команди. Спробуйте ще раз.');
+        }
     });
 }
 
