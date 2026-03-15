@@ -53,6 +53,9 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         }
     
     def validate(self, attrs):
+        email = (attrs.get('email') or '').strip()
+        if email and User.objects.filter(email__iexact=email).exists():
+            raise serializers.ValidationError({"email": "Цей email вже використовується."})
         if attrs['password'] != attrs['password2']:
             raise serializers.ValidationError({"password": "Паролі не співпадають."})
         return attrs

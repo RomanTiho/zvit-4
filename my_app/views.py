@@ -23,6 +23,11 @@ from .serializers import (
 )
 from .models import Player, PlayerStats, Tournament, Team, Standing, Match, UserProfile
 from .services import PlayerRatingService
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes
+from django.core.mail import send_mail
+from django.conf import settings
 
 
 class IsCoach(BasePermission):
@@ -114,28 +119,98 @@ class AuthViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def reset_password(self, request):
-        """Скидання пароля за username"""
-        username = request.data.get('username', '').strip()
+        """
+        Тимчасово вимкнено небезпечний скидання пароля за username.
+        Замість цього використовуйте request_password_reset / confirm_password_reset.
+        """
+        return Response(
+            {'error': 'Скидання пароля через логін вимкнено з міркувань безпеки.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    @action(detail=False, methods=['post'], permission_classes=[AllowAny])
+    def request_password_reset(self, request):
+        """
+        Запит скидання пароля по email.
+        Надсилає лист з посиланням, яке містить uid та токен.
+        """
+        email = request.data.get('email', '').strip().lower()
+        if not email:
+            return Response({'error': 'Вкажіть email'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Можливі дублікати email — беремо перший, але зовні не розкриваємо деталей
+        user = User.objects.filter(email__iexact=email).order_by('id').first()
+        if not user:
+            return Response(
+                {'message': 'Якщо цей email існує в системі, лист було відправлено.'},
+                status=status.HTTP_200_OK,
+            )
+
+        token_generator = PasswordResetTokenGenerator()
+        uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+        token = token_generator.make_token(user)
+
+        reset_url = f"{getattr(settings, 'FRONTEND_BASE_URL', 'http://localhost:8000')}/reset-password.html?uid={uidb64}&token={token}"
+
+        subject = 'Скидання пароля FootballHub'
+        message = (
+            "Ви отримали цей лист, тому що запросили скидання пароля на FootballHub.\n\n"
+            f"Щоб встановити новий пароль, перейдіть за посиланням:\n{reset_url}\n\n"
+            "Якщо ви не робили цей запит, просто ігноруйте лист."
+        )
+
+        try:
+            send_mail(
+                subject,
+                message,
+                getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+                [user.email],
+                fail_silently=False,
+            )
+        except Exception as e:
+            return Response({'error': f'Не вдалося надіслати лист: {e}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response(
+            {'message': 'Якщо цей email існує в системі, лист було відправлено.'},
+            status=status.HTTP_200_OK,
+        )
+
+    @action(detail=False, methods=['post'], permission_classes=[AllowAny])
+    def confirm_password_reset(self, request):
+        """
+        Підтвердження скидання пароля за uid + токен з листа.
+        Очікує: uid, token, new_password, confirm_password.
+        """
+        uidb64 = request.data.get('uid')
+        token = request.data.get('token')
         new_password = request.data.get('new_password', '')
         confirm_password = request.data.get('confirm_password', '')
 
-        if not username or not new_password:
-            return Response({'error': "Вкажіть ім'я користувача та новий пароль"},
-                            status=status.HTTP_400_BAD_REQUEST)
+        if not uidb64 or not token:
+            return Response({'error': 'Невірне посилання для скидання пароля'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not new_password:
+            return Response({'error': 'Вкажіть новий пароль'}, status=status.HTTP_400_BAD_REQUEST)
+
         if new_password != confirm_password:
-            return Response({'error': 'Паролі не співпадають'},
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Паролі не співпадають'}, status=status.HTTP_400_BAD_REQUEST)
+
         if len(new_password) < 8:
-            return Response({'error': 'Пароль має містити щонайменше 8 символів'},
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Пароль має містити щонайменше 8 символів'}, status=status.HTTP_400_BAD_REQUEST)
+
         try:
-            user = User.objects.get(username=username)
-        except User.DoesNotExist:
-            return Response({'error': 'Користувача з таким іменем не знайдено'},
-                            status=status.HTTP_404_NOT_FOUND)
+            uid = urlsafe_base64_decode(uidb64).decode()
+            user = User.objects.get(pk=uid)
+        except Exception:
+            return Response({'error': 'Невірне посилання для скидання пароля'}, status=status.HTTP_400_BAD_REQUEST)
+
+        token_generator = PasswordResetTokenGenerator()
+        if not token_generator.check_token(user, token):
+            return Response({'error': 'Посилання для скидання пароля недійсне або прострочене'}, status=status.HTTP_400_BAD_REQUEST)
 
         user.set_password(new_password)
         user.save()
+
         return Response({'message': 'Пароль успішно змінено'}, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])

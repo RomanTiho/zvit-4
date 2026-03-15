@@ -46,12 +46,19 @@ async function initAuthNav() {
             console.warn('Cannot fetch user role', e);
         }
 
-        // Показати кнопку "Створити турнір" (турніри) та "Зареєструвати команду" (деталі турніру)
+        // Показати кнопку "Створити турнір" (в хедері, а також на головній)
         if (isCoach || isStaff) {
-            if (window.location.pathname.includes('tournaments.html') || path === '/') {
-                const createBtn = document.getElementById('createTournamentBtn');
-                if (createBtn) createBtn.style.display = 'block';
+            // Шукаємо кнопку створення турніру на сторінці
+            const createBtn = document.getElementById('createTournamentBtn');
+            if (createBtn) {
+                createBtn.style.display = 'block'; // Змінено на block для коректного відображення в flex контнейнері
             }
+            
+            ['heroCreateBtn', 'ctaCreateBtn'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = 'inline-block';
+            });
+
             if (window.location.pathname.includes('tournament-detail.html')) {
                 const registerBtn = document.getElementById('registerTeamBtn');
                 if (registerBtn) registerBtn.style.display = 'block';

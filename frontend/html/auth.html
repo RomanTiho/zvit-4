@@ -326,25 +326,17 @@
                     ✨ Створити акаунт
                 </button>
             </form>
-            <!-- Forgot Password Form -->
+            <!-- Forgot Password Form (email-based request) -->
             <form id="resetForm" class="auth-form">
                 <p style="color:#555; margin-bottom:1.5rem; line-height:1.6;">
-                    Введіть ваше ім’я користувача та новий пароль.
+                    Введіть email, на який зареєстрований акаунт. Ми надішлемо лист із посиланням для скидання пароля.
                 </p>
                 <div class="form-group">
-                    <label for="resetUsername">👤 Ім’я користувача</label>
-                    <input type="text" id="resetUsername" placeholder="Ваш логін" required>
-                </div>
-                <div class="form-group">
-                    <label for="resetNewPassword">🔒 Новий пароль</label>
-                    <input type="password" id="resetNewPassword" placeholder="Мінімум 8 символів" required>
-                </div>
-                <div class="form-group">
-                    <label for="resetConfirmPassword">🔒 Підтвердження паролю</label>
-                    <input type="password" id="resetConfirmPassword" placeholder="Повторіть пароль" required>
+                    <label for="resetEmail">📧 Email</label>
+                    <input type="email" id="resetEmail" placeholder="your@email.com" required>
                 </div>
                 <button type="submit" class="submit-btn">
-                    🔒 Змінити пароль
+                    🔑 Надіслати лист для скидання
                 </button>
                 <p style="text-align:center; margin-top:1rem;">
                     <a href="#" id="backToLoginLink" style="color:#667eea; font-size:.9rem;">
@@ -505,22 +497,20 @@
             }
         });
 
-        // Reset password
+        // Reset password: request reset link by email
         document.getElementById('resetForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const submitBtn = e.target.querySelector('.submit-btn');
             submitBtn.disabled = true;
-            submitBtn.textContent = '⏳ Збереження...';
+            submitBtn.textContent = '⏳ Відправка...';
 
-            const username = document.getElementById('resetUsername').value;
-            const new_password = document.getElementById('resetNewPassword').value;
-            const confirm_password = document.getElementById('resetConfirmPassword').value;
+            const email = document.getElementById('resetEmail').value;
 
             try {
-                const response = await fetch(`${CONFIG.API_BASE_URL}/auth/reset_password/`, {
+                const response = await fetch(`${CONFIG.API_BASE_URL}/auth/request_password_reset/`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, new_password, confirm_password })
+                    body: JSON.stringify({ email })
                 });
 
                 let data;
@@ -530,9 +520,9 @@
                     throw new Error('Помилка з\'єднання з сервером (Неможливо обробити відповідь)');
                 }
 
-                if (!response.ok) throw new Error(data.error || 'Помилка зміни пароля');
+                if (!response.ok) throw new Error(data.error || data.message || 'Помилка запиту скидання пароля');
 
-                showToast('✅ Пароль успішно змінено! Тепер увійдіть.', 'success');
+                showToast(data.message || 'Якщо email існує, лист надіслано.', 'success');
                 e.target.reset();
                 setTimeout(() => switchTab('login'), 2000);
 
@@ -540,7 +530,7 @@
                 showToast('❌ ' + error.message, 'error');
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.textContent = '🔒 Змінити пароль';
+                submitBtn.textContent = '🔑 Надіслати лист для скидання';
             }
         });
 

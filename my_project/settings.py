@@ -85,8 +85,15 @@ WSGI_APPLICATION = 'my_project.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'footballhub',
+        'USER': 'root',
+        'PASSWORD': '1234',
+        'HOST': 'localhost',
+        'PORT': '3306',
+        'OPTIONS': {
+            'charset': 'utf8mb4',
+        },
     }
 }
 
@@ -194,3 +201,24 @@ API_FOOTBALL_KEY = _os.environ.get('API_FOOTBALL_KEY', '')
 MEDIA_URL = '/media/'
 import os
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Email settings
+# За замовчуванням використовуємо SMTP (Gmail). Для локальної розробки можна
+# перемкнути на консоль, додавши в .env: EMAIL_BACKEND=console
+_email_backend_mode = _os.environ.get('EMAIL_BACKEND', 'smtp').strip().lower()
+
+if _email_backend_mode == 'console':
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    DEFAULT_FROM_EMAIL = 'no-reply@footballhub.local'
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = _os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+    EMAIL_PORT = int(_os.environ.get('EMAIL_PORT', '587'))
+    EMAIL_USE_TLS = _os.environ.get('EMAIL_USE_TLS', 'true').strip().lower() in ('1', 'true', 'yes', 'on')
+    EMAIL_HOST_USER = _os.environ.get('EMAIL_HOST_USER', '')
+    EMAIL_HOST_PASSWORD = _os.environ.get('EMAIL_HOST_PASSWORD', '')
+    DEFAULT_FROM_EMAIL = _os.environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER or 'no-reply@footballhub.local')
+
+# Базова URL фронтенду для лінків у листах (паролі, підтвердження тощо).
+# За потреби поміняй на реальну адресу продакшн-сайту.
+FRONTEND_BASE_URL = _os.environ.get('FRONTEND_BASE_URL', 'http://127.0.0.1:8000')

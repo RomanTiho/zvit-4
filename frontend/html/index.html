@@ -34,7 +34,6 @@
                 <li><a id="featuresLink" href="/index.html#features">Можливості</a></li>
             </ul>
             <div style="display: flex; gap: 1rem; align-items: center;" id="headerActions">
-                <button class="btn btn-primary" id="createTournamentBtn" style="display:none">Створити турнір</button>
                 <button class="btn btn-primary" id="registerTeamBtn" style="display:none">Зареєструвати команду</button>
                 <button class="btn btn-secondary" id="adminLogoutBtn" style="display:none">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="margin-right: 0.5rem;">
@@ -233,18 +232,7 @@
     <script src="/static/js/config.js"></script>
     <script src="/static/js/auth-nav.js"></script>
     <script src="/static/js/app.js"></script>
-    <script>
-        // Показати кнопки "Створити турнір" тільки авторизованим користувачам
-        (function () {
-            const isLoggedIn = !!sessionStorage.getItem('access_token');
-            if (isLoggedIn) {
-                ['createTournamentBtn', 'heroCreateBtn', 'ctaCreateBtn'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) el.style.display = '';
-                });
-            }
-        })();
-    </script>
+
 </body>
 
 </html>

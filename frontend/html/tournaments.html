@@ -249,26 +249,7 @@
     <script src="/static/js/auth-nav.js"></script>
     <script src="/static/js/app.js"></script>
     <script src="/static/js/tournaments.js"></script>
-    <script>
-        // Показати кнопку "Створити турнір" тільки тренерам і адмінам
-        (async function () {
-            const token = sessionStorage.getItem('access_token');
-            if (!token) return;
-            try {
-                const apiUrl = (typeof CONFIG !== 'undefined') ? CONFIG.API_BASE_URL : '/api';
-                const res = await fetch(`${apiUrl}/auth/me/`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (res.ok) {
-                    const me = await res.json();
-                    if (me.is_coach || me.is_staff) {
-                        const btn = document.getElementById('createTournamentBtn');
-                        if (btn) btn.style.display = '';
-                    }
-                }
-            } catch (e) { console.warn(e); }
-        })();
-    </script>
+
 </body>
 
 </html>
