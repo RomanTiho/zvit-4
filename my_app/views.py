@@ -138,12 +138,13 @@ class AuthViewSet(viewsets.ViewSet):
         if not email:
             return Response({'error': 'Вкажіть email'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Можливі дублікати email — беремо перший, але зовні не розкриваємо деталей
+        # Шукаємо користувача за email
         user = User.objects.filter(email__iexact=email).order_by('id').first()
         if not user:
+            # Змінено: Повертаємо 400 помилку з чітким повідомленням
             return Response(
-                {'message': 'Якщо цей email існує в системі, лист було відправлено.'},
-                status=status.HTTP_200_OK,
+                {'error': 'Користувача з таким email не знайдено.'},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         token_generator = PasswordResetTokenGenerator()
@@ -167,11 +168,12 @@ class AuthViewSet(viewsets.ViewSet):
                 [user.email],
                 fail_silently=False,
             )
-        except Exception as e:
-            return Response({'error': f'Не вдалося надіслати лист: {e}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception:
+            # Приховуємо оригінальну помилку для користувача, але кажемо що щось пішло не так
+            return Response({'error': 'Не вдалося надіслати лист. Перевірте налаштування поштового сервера або спробуйте пізніше.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response(
-            {'message': 'Якщо цей email існує в системі, лист було відправлено.'},
+            {'message': 'Лист успішно відправлено на вашу пошту!'},
             status=status.HTTP_200_OK,
         )
 
