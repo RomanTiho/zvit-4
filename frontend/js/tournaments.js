@@ -20,9 +20,14 @@ function renderTournaments(tournaments) {
         return;
     }
 
-    grid.innerHTML = tournaments.map(tournament => `
+    grid.innerHTML = tournaments.map(tournament => {
+        const bgStyle = tournament.image || tournament.image_base64 ? 
+            `style="background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7)), url('${tournament.image || tournament.image_base64}'); background-size: cover; background-position: center;"` : 
+            '';
+        
+        return `
         <div class="tournament-card" onclick="viewTournament(${tournament.id})">
-            <div class="tournament-header">
+            <div class="tournament-header" ${bgStyle}>
                 <div class="tournament-status">${getStatusBadge(tournament.status)}</div>
                 <h3>${tournament.name}</h3>
                 <div class="tournament-dates">
@@ -61,42 +66,14 @@ function renderTournaments(tournaments) {
                 </div>
             </div>
         </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 // ===== Filter Tournaments =====
 function filterTournaments() {
-    const statusFilter = document.getElementById('statusFilter').value;
-    const formatFilter = document.getElementById('formatFilter').value;
-    const searchQuery = document.getElementById('searchInput').value.toLowerCase();
-
-    let filtered = AppState.tournaments;
-
-    if (statusFilter !== 'all') {
-        filtered = filtered.filter(t => t.status === statusFilter);
-    }
-
-    if (formatFilter !== 'all') {
-        filtered = filtered.filter(t => t.format === formatFilter);
-    }
-
-    if (searchQuery) {
-        filtered = filtered.filter(t =>
-            t.name.toLowerCase().includes(searchQuery) ||
-            t.location.toLowerCase().includes(searchQuery) ||
-            t.description.toLowerCase().includes(searchQuery)
-        );
-    }
-
-    // Sort tournaments: upcoming and ongoing first, completed last
-    const statusOrder = { 'upcoming': 1, 'ongoing': 2, 'completed': 3 };
-    filtered.sort((a, b) => {
-        const orderA = statusOrder[a.status] || 999;
-        const orderB = statusOrder[b.status] || 999;
-        return orderA - orderB;
-    });
-
-    renderTournaments(filtered);
+    // Reset to page 1 and fetch from backend with filters
+    loadTournamentsPage(1);
 }
 
 // ===== View Tournament Details =====
@@ -134,7 +111,22 @@ function setupModalHandlers() {
 // ===== Create Tournament Handler (Now saves as request) =====
 function handleCreateTournament(e) {
     e.preventDefault();
+    
+    const fileInput = document.getElementById('tournamentImage');
+    const file = fileInput ? fileInput.files[0] : null;
 
+    if (file) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            saveTournamentRequest(reader.result);
+        };
+        reader.readAsDataURL(file);
+    } else {
+        saveTournamentRequest(null);
+    }
+}
+
+function saveTournamentRequest(imageBase64) {
     const requestData = {
         id: Date.now(),
         contactName: document.getElementById('contactName').value,
@@ -147,12 +139,22 @@ function handleCreateTournament(e) {
         max_teams: parseInt(document.getElementById('maxTeams').value),
         location: document.getElementById('location').value,
         description: document.getElementById('description').value || 'Немає додаткової інформації',
+        image_base64: imageBase64,
         submittedAt: new Date().toISOString(),
         status: 'pending'
     };
 
     // Validate dates
-    if (new Date(requestData.start_date) >= new Date(requestData.end_date)) {
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const startDateObj = new Date(requestData.start_date);
+    
+    if (startDateObj < today) {
+        showError('Дата початку турніру не може бути в минулому');
+        return;
+    }
+
+    if (startDateObj >= new Date(requestData.end_date)) {
         showError('Дата завершення повинна бути пізніше дати початку');
         return;
     }
@@ -165,25 +167,83 @@ function handleCreateTournament(e) {
     Storage.save('tournamentRequests', requests);
 
     // Reset form and close modal
-    e.target.reset();
+    document.getElementById('createTournamentForm').reset();
     closeModal('createTournamentModal');
 
     // Show success message
     showSuccess('Дякуємо! Ваш запит успішно надіслано. Наш менеджер зв\'яжеться з вами найближчим часом.');
 }
 
+// ===== Pagination Data =====
+let currentPage = 1;
+let totalPages = 1;
+
+// ===== Load Tournaments =====
+async function loadTournamentsPage(page = 1) {
+    currentPage = page;
+    
+    // Get filter values
+    const statusFilter = document.getElementById('statusFilter')?.value || 'all';
+    const formatFilter = document.getElementById('formatFilter')?.value || 'all';
+    const searchQuery = document.getElementById('searchInput')?.value || '';
+
+    const params = { page: currentPage };
+    if (statusFilter !== 'all') params.status = statusFilter;
+    if (formatFilter !== 'all') params.format = formatFilter;
+    if (searchQuery) params.search = searchQuery;
+
+    try {
+        const response = await TournamentsAPI.getTournaments(params);
+        if (response.results) {
+            AppState.tournaments = response.results;
+            const pageSize = 3; // Matching DRF page size
+            totalPages = Math.ceil(response.count / pageSize);
+        } else {
+            AppState.tournaments = response;
+            totalPages = 1;
+        }
+        
+        renderTournaments(AppState.tournaments);
+        renderPaginationControl();
+    } catch (error) {
+        console.error('Failed to load tournaments:', error);
+        renderTournaments([]);
+    }
+}
+
+function renderPaginationControl() {
+    let btnContainer = document.getElementById('paginationControls');
+    if (!btnContainer) {
+        btnContainer = document.createElement('div');
+        btnContainer.id = 'paginationControls';
+        btnContainer.style.marginTop = 'var(--spacing-xl)';
+        document.querySelector('.tournaments-section .container').appendChild(btnContainer);
+    }
+    
+    if (totalPages > 1) {
+        let html = '';
+        html += `<button class="btn btn-outline" style="padding: 0.5rem 1rem; ${currentPage === 1 ? 'opacity:0.5; cursor:not-allowed;' : ''}" ${currentPage === 1 ? 'disabled' : ''} onclick="loadTournamentsPage(${currentPage - 1})">← Назад</button>`;
+        
+        for (let i = 1; i <= totalPages; i++) {
+            const activeClass = i === currentPage ? 'btn-primary' : 'btn-outline';
+            html += `<button class="btn ${activeClass}" style="padding: 0.5rem 1rem;" onclick="loadTournamentsPage(${i})">${i}</button>`;
+        }
+        
+        html += `<button class="btn btn-outline" style="padding: 0.5rem 1rem; ${currentPage === totalPages ? 'opacity:0.5; cursor:not-allowed;' : ''}" ${currentPage === totalPages ? 'disabled' : ''} onclick="loadTournamentsPage(${currentPage + 1})">Далі →</button>`;
+        
+        btnContainer.innerHTML = `<div style="display:flex; justify-content:center; gap:0.5rem; flex-wrap:wrap;">${html}</div>`;
+    } else {
+        btnContainer.innerHTML = '';
+    }
+}
+
+window.loadTournamentsPage = loadTournamentsPage;
+
 // ===== Initialize Tournaments Page =====
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
     // Check if we're on tournaments page
     if (document.getElementById('tournamentsGrid')) {
-        try {
-            const response = await TournamentsAPI.getTournaments();
-            AppState.tournaments = response.results || response;
-            renderTournaments(AppState.tournaments);
-        } catch (error) {
-            console.error('Failed to load tournaments:', error);
-            renderTournaments([]);
-        }
+        loadTournamentsPage(1);
         setupModalHandlers();
 
         // Setup filters
@@ -196,6 +256,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (searchInput) {
             searchInput.addEventListener('input', filterTournaments);
         }
+
+        // Set min date for tournament creation to today
+        const todayStr = new Date().toISOString().split('T')[0];
+        const startDateInput = document.getElementById('startDate');
+        const endDateInput = document.getElementById('endDate');
+        if (startDateInput) startDateInput.min = todayStr;
+        if (endDateInput) endDateInput.min = todayStr;
 
         // Check if we should open create modal
         const urlParams = new URLSearchParams(window.location.search);

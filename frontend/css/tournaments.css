@@ -38,9 +38,12 @@
 
 /* Filters Section */
 .filters-section {
-    padding: var(--spacing-xl) 0;
+    padding: var(--spacing-md) 0;
     background: var(--gray-100);
     border-bottom: 1px solid var(--gray-200);
+    position: sticky;
+    top: 72px;
+    z-index: 100;
 }
 
 .filters {

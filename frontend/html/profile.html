@@ -9,12 +9,39 @@
     <link rel="stylesheet" href="/static/css/styles.css">
     <link rel="stylesheet" href="/static/css/toast.css">
     <style>
+        /* ===== Profile Page Background ===== */
+        body {
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(74,222,128,0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(96,165,250,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 60% 80%, rgba(251,191,36,0.05) 0%, transparent 45%),
+                linear-gradient(160deg, hsl(220,26%,8%) 0%, hsl(220,26%,11%) 60%, hsl(220,30%,9%) 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: var(--white);
+        }
+
+        /* Subtle grid texture overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
         .profile-container {
             max-width: 1000px;
             margin: 6rem auto 2rem;
             padding: 0 var(--spacing-lg);
             opacity: 0;
             transition: opacity 0.3s ease;
+            position: relative;
+            z-index: 1;
         }
 
         .profile-container.loaded {
@@ -168,25 +195,40 @@
         .meta-item {
             display: flex;
             flex-direction: column;
-            padding: var(--spacing-md);
-            background: var(--gray-50);
-            border-radius: var(--radius-lg);
-            min-width: 100px;
+            align-items: center;
+            padding: var(--spacing-lg) var(--spacing-xl);
+            background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%);
+            border-radius: var(--radius-xl);
+            min-width: 140px;
+            border: 2px solid transparent;
+            background-clip: padding-box;
+            box-shadow: 0 4px 16px rgba(59, 130, 246, 0.1);
+            position: relative;
+            transition: transform var(--transition-base), box-shadow var(--transition-base);
+        }
+
+        .meta-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.18);
         }
 
         .meta-label {
             font-size: var(--font-size-xs);
-            color: var(--dark-600);
+            color: var(--dark-500);
             margin-bottom: var(--spacing-xs);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 600;
+            letter-spacing: 1px;
+            font-weight: 700;
         }
 
         .meta-value {
-            font-size: var(--font-size-2xl);
-            font-weight: 800;
-            color: var(--primary-500);
+            font-size: 2.8rem;
+            font-weight: 900;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.1;
         }
 
         .profile-actions {
@@ -259,7 +301,13 @@
         }
 
         .form-group {
-            margin-bottom: var(--spacing-lg);
+            margin-bottom: 0;
+            padding: var(--spacing-md) 0;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .form-group:last-child {
+            border-bottom: none;
         }
 
         .form-group label {
@@ -460,51 +508,111 @@
         </div>
 
         <div class="profile-content" style="grid-template-columns: 1fr;">
+            <!-- Coach Stats (shown only for coaches) -->
+            <div id="coachStatsSection" style="display:none; margin-bottom: var(--spacing-xl);">
+                <div style="
+                    background: linear-gradient(135deg, hsl(220,26%,12%) 0%, hsl(142,60%,18%) 100%);
+                    border-radius: var(--radius-2xl);
+                    padding: var(--spacing-xl) var(--spacing-2xl);
+                    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+                    position: relative;
+                    overflow: hidden;
+                ">
+                    <!-- Decorative circle -->
+                    <div style="position:absolute;top:-40px;right:-40px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.04);pointer-events:none;"></div>
+                    <div style="position:absolute;bottom:-60px;left:-30px;width:160px;height:160px;border-radius:50%;background:rgba(74,222,128,0.07);pointer-events:none;"></div>
+
+                    <div style="color:rgba(255,255,255,0.55);font-size:var(--font-size-xs);font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-bottom:var(--spacing-lg);">
+                        ⚽ Статистика тренера
+                    </div>
+
+                    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;">
+                        <div style="text-align:center;padding:var(--spacing-md);border-right:1px solid rgba(255,255,255,0.1);">
+                            <div style="font-size:2.6rem;font-weight:900;color:#4ade80;line-height:1;" id="statCoachTeams">—</div>
+                            <div style="font-size:var(--font-size-xs);color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:1px;margin-top:6px;font-weight:600;">Команд</div>
+                        </div>
+                        <div style="text-align:center;padding:var(--spacing-md);border-right:1px solid rgba(255,255,255,0.1);">
+                            <div style="font-size:2.6rem;font-weight:900;color:#60a5fa;line-height:1;" id="statCoachTournaments">—</div>
+                            <div style="font-size:var(--font-size-xs);color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:1px;margin-top:6px;font-weight:600;">Турнірів</div>
+                        </div>
+                        <div style="text-align:center;padding:var(--spacing-md);border-right:1px solid rgba(255,255,255,0.1);">
+                            <div style="font-size:2.6rem;font-weight:900;color:#f9a8d4;line-height:1;" id="statCoachMatches">—</div>
+                            <div style="font-size:var(--font-size-xs);color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:1px;margin-top:6px;font-weight:600;">Матчів</div>
+                        </div>
+                        <div style="text-align:center;padding:var(--spacing-md);">
+                            <div style="font-size:2.6rem;font-weight:900;color:#fbbf24;line-height:1;" id="statCoachWins">—</div>
+                            <div style="font-size:var(--font-size-xs);color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:1px;margin-top:6px;font-weight:600;">Перемог</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Tournaments -->
+                <div id="recentTournamentsCard" style="display:none; margin-top:var(--spacing-lg);
+                    background: linear-gradient(135deg, hsl(220,26%,12%) 0%, hsl(217,60%,20%) 100%);
+                    border-radius: var(--radius-2xl);
+                    padding: var(--spacing-xl) var(--spacing-2xl);
+                    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+                    position: relative; overflow: hidden;">
+                    <div style="position:absolute;top:-30px;right:-30px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.04);pointer-events:none;"></div>
+                    <div style="color:rgba(255,255,255,0.55);font-size:var(--font-size-xs);font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-bottom:var(--spacing-lg);">
+                        🏆 Останні турніри
+                    </div>
+                    <div id="recentTournamentsList"></div>
+                </div>
+            </div>
+
             <!-- Profile Details -->
-            <div class="profile-card">
-                <h2>Особиста інформація</h2>
+            <div style="max-width: 600px; margin: 0 auto; width: 100%;
+                background: linear-gradient(135deg, hsl(220,26%,12%) 0%, hsl(220,26%,16%) 100%);
+                border-radius: var(--radius-2xl);
+                padding: var(--spacing-xl) var(--spacing-2xl);
+                box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+                position: relative; overflow: hidden;">
+                <div style="position:absolute;bottom:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:rgba(74,222,128,0.05);pointer-events:none;"></div>
+                <div style="color:rgba(255,255,255,0.55);font-size:var(--font-size-xs);font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-bottom:var(--spacing-lg);">
+                    👤 Особиста інформація
+                </div>
 
                 <div class="view-mode" id="viewMode">
-                    <div class="form-group">
-                        <label>Ім'я користувача</label>
-                        <p id="viewUsername">-</p>
+                    <div style="border-bottom:1px solid rgba(255,255,255,0.08);padding:var(--spacing-md) 0;">
+                        <div style="font-size:var(--font-size-xs);text-transform:uppercase;letter-spacing:1px;font-weight:700;color:rgba(255,255,255,0.4);margin-bottom:6px;">Ім'я користувача</div>
+                        <div style="color:#fff;font-size:var(--font-size-lg);font-weight:600;" id="viewUsername">-</div>
                     </div>
-                    <div class="form-group">
-                        <label>Email</label>
-                        <p id="viewEmail">-</p>
+                    <div style="border-bottom:1px solid rgba(255,255,255,0.08);padding:var(--spacing-md) 0;">
+                        <div style="font-size:var(--font-size-xs);text-transform:uppercase;letter-spacing:1px;font-weight:700;color:rgba(255,255,255,0.4);margin-bottom:6px;">Email</div>
+                        <div style="color:#60a5fa;font-size:var(--font-size-lg);font-weight:600;" id="viewEmail">-</div>
                     </div>
-                    <div class="form-group">
-                        <label>Ім'я</label>
-                        <p id="viewFirstName">-</p>
+                    <div style="border-bottom:1px solid rgba(255,255,255,0.08);padding:var(--spacing-md) 0;">
+                        <div style="font-size:var(--font-size-xs);text-transform:uppercase;letter-spacing:1px;font-weight:700;color:rgba(255,255,255,0.4);margin-bottom:6px;">Ім'я</div>
+                        <div style="color:#4ade80;font-size:var(--font-size-lg);font-weight:600;" id="viewFirstName">-</div>
                     </div>
-                    <div class="form-group">
-                        <label>Прізвище</label>
-                        <p id="viewLastName">-</p>
+                    <div style="padding:var(--spacing-md) 0;">
+                        <div style="font-size:var(--font-size-xs);text-transform:uppercase;letter-spacing:1px;font-weight:700;color:rgba(255,255,255,0.4);margin-bottom:6px;">Прізвище</div>
+                        <div style="color:#4ade80;font-size:var(--font-size-lg);font-weight:600;" id="viewLastName">-</div>
                     </div>
-
                 </div>
 
                 <form class="edit-mode" id="editMode">
                     <div class="form-group">
-                        <label>Ім'я користувача</label>
-                        <input type="text" id="editUsername" disabled>
+                        <label style="color:rgba(255,255,255,0.5);">Ім'я користувача</label>
+                        <input type="text" id="editUsername" disabled style="background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.15);color:#fff;">
                     </div>
                     <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" id="editEmail">
+                        <label style="color:rgba(255,255,255,0.5);">Email</label>
+                        <input type="email" id="editEmail" style="background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.15);color:#fff;">
                     </div>
                     <div class="form-group">
-                        <label>Ім'я</label>
-                        <input type="text" id="editFirstName">
+                        <label style="color:rgba(255,255,255,0.5);">Ім'я</label>
+                        <input type="text" id="editFirstName" style="background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.15);color:#fff;">
                     </div>
                     <div class="form-group">
-                        <label>Прізвище</label>
-                        <input type="text" id="editLastName">
+                        <label style="color:rgba(255,255,255,0.5);">Прізвище</label>
+                        <input type="text" id="editLastName" style="background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.15);color:#fff;">
                     </div>
 
-                    <div style="display: flex; gap: var(--spacing-md);">
+                    <div style="display: flex; gap: var(--spacing-md); margin-top: var(--spacing-lg);">
                         <button type="submit" class="btn btn-primary">Зберегти</button>
-                        <button type="button" class="btn btn-secondary" id="cancelBtn">Скасувати</button>
+                        <button type="button" class="btn btn-secondary" id="cancelBtn" style="color:#fff;border-color:rgba(255,255,255,0.2);">Скасувати</button>
                     </div>
                 </form>
             </div>
@@ -595,6 +703,50 @@
             }
         }
 
+        // Fetch and display coach stats
+        async function fetchCoachStats() {
+            const t = sessionStorage.getItem('access_token');
+            if (!t) return;
+            try {
+                const res = await fetch(`${CONFIG.API_BASE_URL}/auth/coach_stats/`, {
+                    headers: { 'Authorization': `Bearer ${t}` }
+                });
+                if (!res.ok) return;
+                const data = await res.json();
+
+                // Show stats section
+                document.getElementById('coachStatsSection').style.display = 'block';
+                document.getElementById('statCoachTeams').textContent = data.teams;
+                document.getElementById('statCoachTournaments').textContent = data.tournaments;
+                document.getElementById('statCoachMatches').textContent = data.matches;
+                document.getElementById('statCoachWins').textContent = data.wins;
+
+                // Show recent tournaments
+                if (data.recent_tournaments && data.recent_tournaments.length > 0) {
+                    const card = document.getElementById('recentTournamentsCard');
+                    card.style.display = 'block';
+                    const statusMap = { upcoming: 'Майбутній', ongoing: 'Поточний', completed: 'Завершений' };
+                    const formatMap = { league: 'Ліга', knockout: 'Плей-офф', mixed: 'Змішаний' };
+                    document.getElementById('recentTournamentsList').innerHTML = data.recent_tournaments.map(t => `
+                        <div style="display:flex;justify-content:space-between;align-items:center;padding:var(--spacing-md) 0;border-bottom:1px solid rgba(255,255,255,0.08);">
+                            <div>
+                                <div style="font-weight:700;color:#fff;margin-bottom:4px;">${t.name}</div>
+                                <div style="font-size:var(--font-size-sm);color:rgba(255,255,255,0.45);">${formatMap[t.format] || t.format} · ${t.start_date}</div>
+                            </div>
+                            <span style="padding:4px 14px;border-radius:var(--radius-full);font-size:var(--font-size-xs);font-weight:700;
+                                background:${t.status==='ongoing'?'rgba(74,222,128,0.15)':t.status==='upcoming'?'rgba(96,165,250,0.15)':'rgba(255,255,255,0.08)'};
+                                color:${t.status==='ongoing'?'#4ade80':t.status==='upcoming'?'#60a5fa':'rgba(255,255,255,0.5)'};
+                                border:1px solid ${t.status==='ongoing'?'rgba(74,222,128,0.3)':t.status==='upcoming'?'rgba(96,165,250,0.3)':'rgba(255,255,255,0.15)'};">
+                                ${statusMap[t.status] || t.status}
+                            </span>
+                        </div>
+                    `).join('');
+                }
+            } catch (e) {
+                console.warn('Could not load coach stats', e);
+            }
+        }
+
         // Display profile
         function displayProfile(user) {
             // Показати повне ім'я або username якщо ім'я не вказано
@@ -622,6 +774,10 @@
             document.getElementById('editFirstName').value = user.first_name || '';
             document.getElementById('editLastName').value = user.last_name || '';
 
+            // Load coach stats for coaches
+            if (user.is_coach || user.is_staff) {
+                fetchCoachStats();
+            }
         }
 
 

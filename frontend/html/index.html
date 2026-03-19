@@ -53,8 +53,14 @@
 
     <!-- Hero Section -->
     <section class="hero">
-        <div class="hero-background"></div>
-        <div class="container">
+        <!-- Real Photo Carousel -->
+        <div class="hero-carousel">
+            <div class="carousel-slide active" style="background-image: url('/static/images/hero_1.jpg');"></div>
+            <div class="carousel-slide" style="background-image: url('/static/images/hero_2.jpg');"></div>
+            <div class="carousel-slide" style="background-image: url('/static/images/hero_3.jpg');"></div>
+            <div class="carousel-overlay"></div>
+        </div>
+        <div class="container" style="position:relative; z-index:2;">
             <div class="hero-content">
                 <h1 class="hero-title">
                     Організуйте футбольні турніри
@@ -76,19 +82,45 @@
                         Переглянути турніри
                     </button>
                 </div>
+                <!-- Live Stats from API -->
                 <div class="hero-stats">
                     <div class="stat-card">
-                        <div class="stat-number">150+</div>
-                        <div class="stat-label">Активних турнірів</div>
+                        <div class="stat-number" id="statTournaments">&hellip;</div>
+                        <div class="stat-label">Турнірів у базі</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number">2,500+</div>
+                        <div class="stat-number" id="statTeams">&hellip;</div>
                         <div class="stat-label">Зареєстрованих команд</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number">10,000+</div>
+                        <div class="stat-number" id="statPlayers">&hellip;</div>
+                        <div class="stat-label">Гравців у реєстрі</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="statMatches">&hellip;</div>
                         <div class="stat-label">Проведених матчів</div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Us Section -->
+    <section class="about-us">
+        <div class="container">
+            <div class="about-content">
+                <h2 class="section-title">Про нас</h2>
+                <div class="about-text">
+                    <p>
+                        <strong>FootballHub</strong> — це сучасна платформа для організації та проведення аматорських футбольних турнірів.
+                        Ми створили зручний інструмент, який дозволяє тренерам і організаторам швидко реєструвати команди,
+                        вести турнірні таблиці та відстежувати статистику гравців.
+                    </p>
+                    <p>
+                        Наша місія — зробити аматорський футбол більш організованим, прозорим та доступним для всіх.
+                        Від невеликих міських турнірів до великих регіональних змагань — FootballHub допоможе провести
+                        будь-який турнір на найвищому рівні.
+                    </p>
                 </div>
             </div>
         </div>
@@ -174,22 +206,7 @@
         </div>
     </section>
 
-    <!-- CTA Section -->
-    <section class="cta-section">
-        <div class="container">
-            <div class="cta-content">
-                <h2>Готові почати?</h2>
-                <p>Створіть свій перший турнір за лічені хвилини</p>
-                <button class="btn btn-primary btn-large" id="ctaCreateBtn" style="display:none">
-                    Створити турнір зараз
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                        <path d="M4 10H16M16 10L11 5M16 10L11 15" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" />
-                    </svg>
-                </button>
-            </div>
-        </div>
-    </section>
+
 
     <!-- Footer -->
     <footer class="footer">

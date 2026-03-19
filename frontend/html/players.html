@@ -121,7 +121,6 @@
             font-weight: 700;
             color: var(--dark-900);
             margin-bottom: var(--spacing-xs);
-            text-transform: capitalize;
         }
 
         .player-number {
@@ -200,7 +199,7 @@
             <ul class="nav-links" id="mainNavLinks">
                 <li><a href="/index.html">Головна</a></li>
                 <li><a href="/tournaments.html">Турніри</a></li>
-                <li><a href="/players.html">Рейтинг</a></li>
+                <li><a href="/players.html" class="active">Рейтинг</a></li>
                 <li><a id="featuresLink" href="/index.html#features">Можливості</a></li>
             </ul>
             <div style="display: flex; gap: 1rem; align-items: center;" id="headerActions">
@@ -225,7 +224,7 @@
     <div class="leaderboard-container">
         <div class="leaderboard-header">
             <h1>🏆 Рейтинг Гравців</h1>
-            <p>Топ гравців аматорського футболу</p>
+            <p>Топ гравців з команд, зареєстрованих на турніри</p>
         </div>
 
         <div class="position-filters">
@@ -253,7 +252,7 @@
             grid.innerHTML = '<div class="loading">Завантаження...</div>';
 
             try {
-                const response = await PlayersAPI.getLeaderboard(position, 50);
+                const response = await PlayersAPI.getLeaderboard(position, 100);
                 const players = response.results || response;
                 displayPlayers(players);
             } catch (error) {
@@ -275,13 +274,13 @@
                 <div class="player-card">
                     <div class="player-header">
                         <div class="player-info">
-                            <div class="player-name">${capitalizeFullName(player.username)}</div>
+                            <div class="player-name">${player.full_name || player.username}</div>
                             <div class="player-number">№ ${player.jersey_number || '-'}</div>
                             <div class="player-position">${getPositionName(player.position)}</div>
                         </div>
                         <div class="player-rank">#${index + 1}</div>
                     </div>
-                    <div class="player-rating">${player.overall_rating}</div>
+                    <div class="player-rating">${parseFloat(player.overall_rating).toFixed(2)}</div>
                     <div class="player-stats">
                         <div class="stat-item">
                             <div class="stat-value">${player.matches_played}</div>
@@ -294,17 +293,6 @@
                     </div>
                 </div>
             `).join('');
-        }
-
-        function capitalizeFullName(name) {
-            return name
-                .replace(/\d+$/, '')      // видалити цифри в кінці
-                .replace(/_/g, ' ')        // підкреслення → пробіл
-                .trim()
-                .split(' ')
-                .filter(w => w.length > 0)
-                .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-                .join(' ');
         }
 
         function getPositionName(position) {

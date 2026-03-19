@@ -274,6 +274,40 @@ class AuthViewSet(viewsets.ViewSet):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def coach_stats(self, request):
+        """Статистика тренера — команди, турніри, матчі, перемоги"""
+        user = request.user
+        # Команди цього тренера
+        teams = Team.objects.filter(coach=user)
+        team_count = teams.count()
+        # Унікальні турніри, в яких беруть участь команди тренера
+        tournament_ids = teams.values_list('tournament_id', flat=True).distinct()
+        tournament_count = len(set(tournament_ids))
+        # Матчі в цих турнірах
+        team_names = list(teams.values_list('name', flat=True))
+        from django.db.models import Q
+        matches_qs = Match.objects.filter(tournament_id__in=tournament_ids)
+        match_count = matches_qs.count()
+        # Перемоги (матчі де команда тренера перемогла)
+        wins = 0
+        for m in matches_qs:
+            if m.home_team in team_names and m.home_score > m.away_score:
+                wins += 1
+            elif m.away_team in team_names and m.away_score > m.home_score:
+                wins += 1
+        # Останні турніри
+        from .serializers import TournamentSerializer as TS
+        recent_tournaments = Tournament.objects.filter(id__in=tournament_ids).order_by('-start_date')[:5]
+        recent_data = [{'id': t.id, 'name': t.name, 'status': t.status, 'format': t.format, 'start_date': str(t.start_date)} for t in recent_tournaments]
+        return Response({
+            'teams': team_count,
+            'tournaments': tournament_count,
+            'matches': match_count,
+            'wins': wins,
+            'recent_tournaments': recent_data,
+        })
+
 
 class ProfileViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet для публічних профілів"""

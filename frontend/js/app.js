@@ -66,6 +66,57 @@ function setupNavigation() {
     }
 }
 
+// ===== Hero Carousel =====
+function initHeroCarousel() {
+    const slides = document.querySelectorAll('.carousel-slide');
+    if (!slides.length) return;
+    
+    let currentSlide = 0;
+    setInterval(() => {
+        slides[currentSlide].classList.remove('active');
+        currentSlide = (currentSlide + 1) % slides.length;
+        slides[currentSlide].classList.add('active');
+    }, 5000);
+}
+
+// ===== Live Hero Stats =====
+async function loadHeroStats() {
+    const apiBase = (typeof CONFIG !== 'undefined') ? CONFIG.API_BASE_URL : '/api';
+    try {
+        const [tourRes, teamsRes, playersRes, matchesRes] = await Promise.all([
+            fetch(`${apiBase}/tournaments/`),
+            fetch(`${apiBase}/teams/`),
+            fetch(`${apiBase}/players/`),
+            fetch(`${apiBase}/matches/`),
+        ]);
+        const [tourData, teamsData, playersData, matchesData] = await Promise.all([
+            tourRes.json(), teamsRes.json(), playersRes.json(), matchesRes.json()
+        ]);
+
+        const counts = {
+            statTournaments: tourData.count ?? (Array.isArray(tourData) ? tourData.length : '?'),
+            statTeams:       teamsData.count ?? (Array.isArray(teamsData) ? teamsData.length : '?'),
+            statPlayers:     playersData.count ?? (Array.isArray(playersData) ? playersData.length : '?'),
+            statMatches:     matchesData.count ?? (Array.isArray(matchesData) ? matchesData.length : '?'),
+        };
+
+        Object.entries(counts).forEach(([id, val]) => {
+            const el = document.getElementById(id);
+            if (!el || typeof val !== 'number') { if (el) el.textContent = val; return; }
+            // Animate counter
+            let start = 0;
+            const step = Math.ceil(val / 40);
+            const timer = setInterval(() => {
+                start += step;
+                if (start >= val) { el.textContent = val; clearInterval(timer); }
+                else { el.textContent = start; }
+            }, 30);
+        });
+    } catch (e) {
+        console.warn('Could not load hero stats', e);
+    }
+}
+
 // ===== Format Date Helper =====
 function formatDate(dateString) {
     const date = new Date(dateString);
@@ -101,6 +152,8 @@ function getFormatName(format) {
 
 // ===== Initialize App =====
 document.addEventListener('DOMContentLoaded', () => {
+    initHeroCarousel();
+    loadHeroStats();
     setupNavigation();
 
     // Add smooth scroll for anchor links

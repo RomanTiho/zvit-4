@@ -31,9 +31,20 @@ class TournamentAdmin(admin.ModelAdmin):
 
 @admin.register(Team)
 class TeamAdmin(admin.ModelAdmin):
-    list_display = ('name', 'tournament', 'captain', 'email')
-    list_filter = ('tournament',)
+    list_display = ('name', 'tournament', 'captain', 'email', 'status')
+    list_filter = ('tournament', 'status')
     search_fields = ('name', 'captain')
+    actions = ['approve_teams', 'reject_teams']
+
+    @admin.action(description='Підтвердити вибрані заявки')
+    def approve_teams(self, request, queryset):
+        updated = queryset.update(status='approved')
+        self.message_user(request, f'Підтверджено {updated} заявок обо команд.')
+
+    @admin.action(description='Відхилити вибрані заявки')
+    def reject_teams(self, request, queryset):
+        updated = queryset.update(status='rejected')
+        self.message_user(request, f'Відхилено {updated} заявок.')
 
 @admin.register(Standing)
 class StandingAdmin(admin.ModelAdmin):

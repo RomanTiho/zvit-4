@@ -217,6 +217,7 @@ class Tournament(models.Model):
     location = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     status = models.CharField(max_length=50, default="upcoming")
+    image = models.ImageField(upload_to='tournaments/', null=True, blank=True, verbose_name="Фото турніру")
 
     class Meta:
         verbose_name = 'Турнір'
@@ -226,6 +227,11 @@ class Tournament(models.Model):
         return self.name
 
 class Team(models.Model):
+    TEAM_STATUS_CHOICES = [
+        ('pending', 'Очікує'),
+        ('approved', 'Підтверджено'),
+        ('rejected', 'Відхилено'),
+    ]
     tournament = models.ForeignKey(Tournament, related_name="teams", on_delete=models.CASCADE)
     coach = models.ForeignKey(User, on_delete=models.CASCADE, related_name="teams_coached", null=True, blank=True)
     name = models.CharField(max_length=100)
@@ -234,6 +240,7 @@ class Team(models.Model):
     phone = models.CharField(max_length=20)
     players_count = models.IntegerField(default=11)
     player_roster = models.JSONField(default=list)
+    status = models.CharField(max_length=20, choices=TEAM_STATUS_CHOICES, default='pending', verbose_name='Статус заявки')
 
     class Meta:
         verbose_name = 'Команда'
