@@ -14,11 +14,13 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
 from django.urls import path, include, re_path
 from django.http import Http404
 from django.template import TemplateDoesNotExist
 from django.shortcuts import render
+
 
 def frontend_view(request, page="index"):
     try:
@@ -26,15 +28,17 @@ def frontend_view(request, page="index"):
     except TemplateDoesNotExist:
         raise Http404()
 
+
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/', include('my_app.urls')),
-    re_path(r'^(?P<page>[\w\-]+)\.html$', frontend_view),
-    path('', frontend_view, kwargs={'page': 'index'}),
+    path("admin/", admin.site.urls),
+    path("api/", include("my_app.urls")),
+    re_path(r"^(?P<page>[\w\-]+)\.html$", frontend_view),
+    path("", frontend_view, kwargs={"page": "index"}),
 ]
 
 
 from django.conf import settings
 from django.conf.urls.static import static
+
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

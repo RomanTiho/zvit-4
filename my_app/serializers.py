@@ -1,24 +1,38 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
-from .models import Player, PlayerStats, PlayerRatingHistory, Tournament, Team, Standing, Match, UserProfile
+from .models import (
+    Player,
+    PlayerStats,
+    PlayerRatingHistory,
+    Tournament,
+    Team,
+    Standing,
+    Match,
+    UserProfile,
+)
 from django.utils import timezone
+
 
 class TeamSerializer(serializers.ModelSerializer):
     class Meta:
         model = Team
-        fields = '__all__'
+        fields = "__all__"
+
 
 class StandingSerializer(serializers.ModelSerializer):
-    team_name = serializers.CharField(source='team.name', read_only=True)
+    team_name = serializers.CharField(source="team.name", read_only=True)
+
     class Meta:
         model = Standing
-        fields = '__all__'
+        fields = "__all__"
+
 
 class MatchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Match
-        fields = '__all__'
+        fields = "__all__"
+
 
 class TournamentSerializer(serializers.ModelSerializer):
     teams = TeamSerializer(many=True, read_only=True)
@@ -27,59 +41,73 @@ class TournamentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tournament
-        fields = '__all__'
+        fields = "__all__"
 
     def validate_start_date(self, value):
         # Allow validation to pass during updates if the date hasn't changed
         if self.instance and self.instance.start_date == value:
             return value
         if value < timezone.now().date():
-            raise serializers.ValidationError("Дата початку турніру не може бути в минулому.")
+            raise serializers.ValidationError(
+                "Дата початку турніру не може бути в минулому."
+            )
         return value
-
-
 
 
 class UserSerializer(serializers.ModelSerializer):
     """Serializer для користувача"""
+
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name']
+        fields = ["id", "username", "email", "first_name", "last_name"]
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
     """Serializer для реєстрації нового користувача"""
-    password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
+
+    password = serializers.CharField(
+        write_only=True, required=True, validators=[validate_password]
+    )
     password2 = serializers.CharField(write_only=True, required=True)
     position = serializers.ChoiceField(choices=Player.POSITION_CHOICES, required=False)
-    
+
     class Meta:
         model = User
-        fields = ['username', 'password', 'password2', 'email', 'first_name', 'last_name', 'position']
+        fields = [
+            "username",
+            "password",
+            "password2",
+            "email",
+            "first_name",
+            "last_name",
+            "position",
+        ]
         extra_kwargs = {
-            'first_name': {'required': True},
-            'last_name': {'required': True},
-            'email': {'required': True}
+            "first_name": {"required": True},
+            "last_name": {"required": True},
+            "email": {"required": True},
         }
-    
+
     def validate(self, attrs):
-        email = (attrs.get('email') or '').strip()
+        email = (attrs.get("email") or "").strip()
         if email and User.objects.filter(email__iexact=email).exists():
-            raise serializers.ValidationError({"email": "Цей email вже використовується."})
-        if attrs['password'] != attrs['password2']:
+            raise serializers.ValidationError(
+                {"email": "Цей email вже використовується."}
+            )
+        if attrs["password"] != attrs["password2"]:
             raise serializers.ValidationError({"password": "Паролі не співпадають."})
         return attrs
-    
+
     def create(self, validated_data):
-        validated_data.pop('password2')
-        position = validated_data.pop('position', None)
+        validated_data.pop("password2")
+        position = validated_data.pop("position", None)
 
         user = User.objects.create_user(
-            username=validated_data['username'],
-            email=validated_data['email'],
-            first_name=validated_data['first_name'],
-            last_name=validated_data['last_name'],
-            password=validated_data['password']
+            username=validated_data["username"],
+            email=validated_data["email"],
+            first_name=validated_data["first_name"],
+            last_name=validated_data["last_name"],
+            password=validated_data["password"],
         )
 
         # UserProfile створюється автоматично через сигнал (is_coach=False за замовчуванням)
@@ -92,43 +120,61 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     """Serializer для профілю користувача"""
+
     player = serializers.SerializerMethodField()
     is_coach = serializers.SerializerMethodField()
     avatar = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_coach', 'avatar', 'player']
-        read_only_fields = ['username']
+        fields = [
+            "id",
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "is_coach",
+            "avatar",
+            "player",
+        ]
+        read_only_fields = ["username"]
 
     def get_is_coach(self, obj):
-        return obj.groups.filter(name='Coach').exists()
+        return obj.groups.filter(name="Coach").exists()
 
     def get_avatar(self, obj):
         try:
             profile = obj.profile
             if profile.avatar:
-                request = self.context.get('request')
-                return request.build_absolute_uri(profile.avatar.url) if request else profile.avatar.url
+                request = self.context.get("request")
+                return (
+                    request.build_absolute_uri(profile.avatar.url)
+                    if request
+                    else profile.avatar.url
+                )
         except Exception:
             pass
         return None
-    
+
     def get_player(self, obj):
         try:
             player = obj.player
-            request = self.context.get('request')
+            request = self.context.get("request")
             avatar_url = None
             if player.avatar:
-                avatar_url = request.build_absolute_uri(player.avatar.url) if request else player.avatar.url
-                
+                avatar_url = (
+                    request.build_absolute_uri(player.avatar.url)
+                    if request
+                    else player.avatar.url
+                )
+
             return {
-                'id': player.id,
-                'position': player.position,
-                'jersey_number': player.jersey_number,
-                'avatar': avatar_url,
-                'overall_rating': float(player.overall_rating),
-                'matches_played': player.matches_played
+                "id": player.id,
+                "position": player.position,
+                "jersey_number": player.jersey_number,
+                "avatar": avatar_url,
+                "overall_rating": float(player.overall_rating),
+                "matches_played": player.matches_played,
             }
         except Player.DoesNotExist:
             return None
@@ -136,23 +182,26 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 class UserUpdateSerializer(serializers.ModelSerializer):
     """Serializer для оновлення профілю"""
+
     position = serializers.ChoiceField(choices=Player.POSITION_CHOICES, required=False)
-    jersey_number = serializers.IntegerField(required=False, allow_null=True, min_value=1, max_value=99)
-    
+    jersey_number = serializers.IntegerField(
+        required=False, allow_null=True, min_value=1, max_value=99
+    )
+
     class Meta:
         model = User
-        fields = ['email', 'first_name', 'last_name', 'position', 'jersey_number']
-    
+        fields = ["email", "first_name", "last_name", "position", "jersey_number"]
+
     def update(self, instance, validated_data):
-        position = validated_data.pop('position', None)
-        jersey_number = validated_data.pop('jersey_number', None)
-        
+        position = validated_data.pop("position", None)
+        jersey_number = validated_data.pop("jersey_number", None)
+
         # Оновити дані користувача
-        instance.email = validated_data.get('email', instance.email)
-        instance.first_name = validated_data.get('first_name', instance.first_name)
-        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.email = validated_data.get("email", instance.email)
+        instance.first_name = validated_data.get("first_name", instance.first_name)
+        instance.last_name = validated_data.get("last_name", instance.last_name)
         instance.save()
-        
+
         # Оновити позицію та номер гравця
         if position or jersey_number is not None:
             try:
@@ -164,53 +213,81 @@ class UserUpdateSerializer(serializers.ModelSerializer):
                 player.save()
             except Player.DoesNotExist:
                 Player.objects.create(
-                    user=instance, 
-                    position=position or 'MID',
-                    jersey_number=jersey_number
+                    user=instance,
+                    position=position or "MID",
+                    jersey_number=jersey_number,
                 )
-        
+
         return instance
 
 
 class PlayerStatsSerializer(serializers.ModelSerializer):
     """Serializer для статистики гравця"""
+
     class Meta:
         model = PlayerStats
         fields = [
-            'id', 'match_id',
+            "id",
+            "match_id",
             # базова статистика
-            'goals', 'assists', 'minutes_played',
-            'yellow_cards', 'red_cards',
+            "goals",
+            "assists",
+            "minutes_played",
+            "yellow_cards",
+            "red_cards",
             # xG-натхненна статистика
-            'shots', 'shots_on_target', 'key_passes',
-            'saves', 'tackles', 'interceptions',
+            "shots",
+            "shots_on_target",
+            "key_passes",
+            "saves",
+            "tackles",
+            "interceptions",
             # авторозрахунок
-            'rating', 'created_at',
+            "rating",
+            "created_at",
         ]
-        read_only_fields = ['rating', 'created_at']
-
+        read_only_fields = ["rating", "created_at"]
 
 
 class PlayerRatingHistorySerializer(serializers.ModelSerializer):
     """Serializer для історії рейтингу"""
+
     class Meta:
         model = PlayerRatingHistory
-        fields = ['rating', 'recorded_at']
+        fields = ["rating", "recorded_at"]
 
 
 class PlayerSerializer(serializers.ModelSerializer):
     """Serializer для гравця"""
-    username = serializers.CharField(source='user.username', read_only=True)
+
+    username = serializers.CharField(source="user.username", read_only=True)
     full_name = serializers.SerializerMethodField()
-    email = serializers.EmailField(source='user.email', read_only=True)
+    email = serializers.EmailField(source="user.email", read_only=True)
     recent_stats = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = Player
-        fields = ['id', 'username', 'full_name', 'email', 'position', 'jersey_number', 'avatar', 'overall_rating', 
-                  'matches_played', 'recent_stats', 'created_at', 'updated_at']
-        read_only_fields = ['overall_rating', 'matches_played', 'created_at', 'updated_at']
-    
+        fields = [
+            "id",
+            "username",
+            "full_name",
+            "email",
+            "position",
+            "jersey_number",
+            "avatar",
+            "overall_rating",
+            "matches_played",
+            "recent_stats",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = [
+            "overall_rating",
+            "matches_played",
+            "created_at",
+            "updated_at",
+        ]
+
     def get_full_name(self, obj):
         name = f"{obj.user.first_name} {obj.user.last_name}".strip()
         return name if name else obj.user.username
@@ -223,9 +300,10 @@ class PlayerSerializer(serializers.ModelSerializer):
 
 class PlayerDetailSerializer(PlayerSerializer):
     """Детальний serializer для гравця"""
+
     user = UserSerializer(read_only=True)
     rating_history = PlayerRatingHistorySerializer(many=True, read_only=True)
-    all_stats = PlayerStatsSerializer(source='stats', many=True, read_only=True)
-    
+    all_stats = PlayerStatsSerializer(source="stats", many=True, read_only=True)
+
     class Meta(PlayerSerializer.Meta):
-        fields = PlayerSerializer.Meta.fields + ['user', 'rating_history', 'all_stats']
+        fields = PlayerSerializer.Meta.fields + ["user", "rating_history", "all_stats"]

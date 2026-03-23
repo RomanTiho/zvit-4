@@ -1,7 +1,7 @@
 import os
 import re
 
-unified_header = '''<nav class="navbar">
+unified_header = """<nav class="navbar">
     <div class="container">
         <div class="nav-content">
             <a href="/index.html" class="logo">
@@ -36,25 +36,30 @@ unified_header = '''<nav class="navbar">
             <div class="auth-nav-container" id="authNavContainer"></div>
         </div>
     </div>
-</nav>'''
+</nav>"""
 
-html_dir = r'd:\zvit4\diplom\frontend\html'
+html_dir = r"d:\zvit4\diplom\frontend\html"
 
 for file in os.listdir(html_dir):
-    if not file.endswith('.html'):
+    if not file.endswith(".html"):
         continue
     filepath = os.path.join(html_dir, file)
-    with open(filepath, 'r', encoding='utf-8') as f:
+    with open(filepath, "r", encoding="utf-8") as f:
         content = f.read()
 
     # Replace nav block
-    content = re.sub(r'<nav class="navbar".*?</nav>', unified_header, content, flags=re.DOTALL)
-    
+    content = re.sub(
+        r'<nav class="navbar".*?</nav>', unified_header, content, flags=re.DOTALL
+    )
+
     # Add favicon if not exists
-    if 'favicon.svg' not in content:
-        content = content.replace('</title>', '</title>\n    <link rel="icon" href="/favicon.svg" type="image/svg+xml">')
-    
-    with open(filepath, 'w', encoding='utf-8') as f:
+    if "favicon.svg" not in content:
+        content = content.replace(
+            "</title>",
+            '</title>\n    <link rel="icon" href="/favicon.svg" type="image/svg+xml">',
+        )
+
+    with open(filepath, "w", encoding="utf-8") as f:
         f.write(content)
 
-print('Headers and Favicon updated.')
+print("Headers and Favicon updated.")
