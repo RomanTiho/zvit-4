@@ -26,8 +26,10 @@ req_headers = {
 for url, dest in urls:
     print(f"Завантаження {url} ...")
     try:
+        if not url.lower().startswith(("http://", "https://")):
+            raise ValueError("URL must start with http:// or https://")
         req = urllib.request.Request(url, headers=req_headers)
-        with urllib.request.urlopen(req) as response:
+        with urllib.request.urlopen(req) as response:  # nosec B310
             with open(dest, "wb") as f:
                 f.write(response.read())
         print(f"Успішно збережено: {dest}")
