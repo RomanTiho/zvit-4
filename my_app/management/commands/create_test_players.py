@@ -1,8 +1,10 @@
-from django.core.management.base import BaseCommand
+import random
+
 from django.contrib.auth.models import User
+from django.core.management.base import BaseCommand
+
 from my_app.models import Player, PlayerStats
 from my_app.services import PlayerRatingService
-import random
 
 
 class Command(BaseCommand):

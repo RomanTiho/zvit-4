@@ -1,17 +1,19 @@
-from django.urls import path, include
+from django.urls import include, path
+
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
 from .views import (
-    PlayerViewSet,
-    PlayerStatsViewSet,
     AuthViewSet,
+    MatchViewSet,
+    PlayerStatsViewSet,
+    PlayerViewSet,
     ProfileViewSet,
+    StandingViewSet,
+    TeamViewSet,
+    TournamentViewSet,
     upl_squad_view,
     upl_sync_view,
-    TournamentViewSet,
-    TeamViewSet,
-    StandingViewSet,
-    MatchViewSet,
 )
 
 router = DefaultRouter()

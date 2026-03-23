@@ -1,6 +1,8 @@
-from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Player, PlayerStats, PlayerRatingHistory
+
+from rest_framework import serializers
+
+from .models import Player, PlayerRatingHistory, PlayerStats
 
 
 class UserSerializer(serializers.ModelSerializer):

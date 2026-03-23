@@ -16,10 +16,10 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path, include, re_path
 from django.http import Http404
-from django.template import TemplateDoesNotExist
 from django.shortcuts import render
+from django.template import TemplateDoesNotExist
+from django.urls import include, path, re_path
 
 
 def frontend_view(request, page="index"):

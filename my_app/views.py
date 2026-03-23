@@ -1,38 +1,39 @@
-from rest_framework import viewsets, status
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.core.mail import send_mail
+from django.db.models import Q
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.response import Response
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import (
-    IsAuthenticatedOrReadOnly,
-    IsAuthenticated,
     AllowAny,
     BasePermission,
+    IsAuthenticated,
+    IsAuthenticatedOrReadOnly,
 )
+from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth.models import User
-from django.db.models import Q
-from .models import Player, PlayerStats, UserProfile
+
+from .models import Match, Player, PlayerStats, Standing, Team, Tournament, UserProfile
 from .serializers import (
-    PlayerSerializer,
-    PlayerDetailSerializer,
-    PlayerStatsSerializer,
-    PlayerRatingHistorySerializer,
-    UserRegisterSerializer,
-    UserProfileSerializer,
-    UserUpdateSerializer,
-    TournamentSerializer,
-    TeamSerializer,
-    StandingSerializer,
     MatchSerializer,
+    PlayerDetailSerializer,
+    PlayerRatingHistorySerializer,
+    PlayerSerializer,
+    PlayerStatsSerializer,
+    StandingSerializer,
+    TeamSerializer,
+    TournamentSerializer,
+    UserProfileSerializer,
+    UserRegisterSerializer,
+    UserUpdateSerializer,
 )
-from .models import Player, PlayerStats, Tournament, Team, Standing, Match, UserProfile
 from .services import PlayerRatingService
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes
-from django.core.mail import send_mail
-from django.conf import settings
 
 
 class IsCoach(BasePermission):
@@ -516,9 +517,10 @@ class PlayerStatsViewSet(viewsets.ModelViewSet):
         return queryset
 
 
-# ===== UPL Squad Views =====
-from .upl_service import get_squad, UPL_TEAM_IDS
 from rest_framework.decorators import api_view, permission_classes
+
+# ===== UPL Squad Views =====
+from .upl_service import UPL_TEAM_IDS, get_squad
 
 
 @api_view(["GET"])

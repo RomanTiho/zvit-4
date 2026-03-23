@@ -1,17 +1,19 @@
-from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
+from django.utils import timezone
+
+from rest_framework import serializers
+
 from .models import (
-    Player,
-    PlayerStats,
-    PlayerRatingHistory,
-    Tournament,
-    Team,
-    Standing,
     Match,
+    Player,
+    PlayerRatingHistory,
+    PlayerStats,
+    Standing,
+    Team,
+    Tournament,
     UserProfile,
 )
-from django.utils import timezone
 
 
 class TeamSerializer(serializers.ModelSerializer):

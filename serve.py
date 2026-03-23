@@ -1,8 +1,8 @@
 # Простий скрипт для запуску HTTP сервера
 
 import http.server
-import socketserver
 import os
+import socketserver
 
 PORT = 8000
 DIRECTORY = os.path.dirname(os.path.abspath(__file__))

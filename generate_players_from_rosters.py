@@ -1,12 +1,14 @@
 import os
-import django
 import random
+
+import django
 
 # --- Налаштування Django ---
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "my_project.settings")
 django.setup()
 
 from django.contrib.auth.models import User
+
 from my_app.models import Player, PlayerStats, Team
 
 print("Видалення поточних гравців-ботів (крім адміністраторів і тренерів)...")

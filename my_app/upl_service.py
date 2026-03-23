@@ -1,6 +1,8 @@
-import requests
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
+
 from django.conf import settings
+
+import requests
 
 # ===== UPL Team ID mapping (api-football.com, league 333, verified IDs) =====
 UPL_TEAM_IDS = {

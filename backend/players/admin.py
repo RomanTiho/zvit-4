@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Player, PlayerStats, PlayerRatingHistory
+
+from .models import Player, PlayerRatingHistory, PlayerStats
 
 
 @admin.register(Player)

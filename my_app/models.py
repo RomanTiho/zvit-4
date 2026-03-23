@@ -1,5 +1,5 @@
-from django.db import models
 from django.contrib.auth.models import User
+from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
@@ -63,8 +63,9 @@ class Player(models.Model):
         Загальний рейтинг гравця = середнє рейтингів матчів (шкала 1.0–10.0).
         Рейтинг кожного матчу вже розраховується в PlayerStats._calculate_match_rating().
         """
-        from django.db.models import Avg
         from decimal import Decimal
+
+        from django.db.models import Avg
 
         recent_stats = self.stats.filter(rating__isnull=False)[:10]
         if not recent_stats.exists():

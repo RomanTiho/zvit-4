@@ -1,6 +1,8 @@
 from decimal import Decimal
-from django.db.models import Sum, Avg
-from .models import Player, PlayerStats, PlayerRatingHistory
+
+from django.db.models import Avg, Sum
+
+from .models import Player, PlayerRatingHistory, PlayerStats
 
 
 class PlayerRatingService:

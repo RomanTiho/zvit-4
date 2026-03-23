@@ -7,6 +7,7 @@
 
 import os
 import sys
+
 import django
 
 # --- Налаштування Django ---
@@ -14,8 +15,9 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "my_project.settings")
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 django.setup()
 
-from my_app.models import Tournament, Team, Standing, Match
 from datetime import datetime, timezone
+
+from my_app.models import Match, Standing, Team, Tournament
 
 TOURNAMENT_ID = 3  # "Літній Кубок 2025"
 

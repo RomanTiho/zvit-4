@@ -6,14 +6,19 @@
 4. Генерує статистику → рейтинг автоматично рахується моделлю
 """
 
-import os, sys, django, random
+import os
+import random
+import sys
 from decimal import Decimal
+
+import django
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "my_project.settings")
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 django.setup()
 
 from django.contrib.auth.models import User
+
 from my_app.models import Player, PlayerStats, Team
 
 # ─── Укр. імена для доповнення ────────────────────────────────────────────────
