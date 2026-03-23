@@ -87,21 +87,35 @@
         }
 
         .profile-header {
-            background: var(--white);
-            border-radius: var(--radius-xl);
-            padding: var(--spacing-xl);
+            background: linear-gradient(135deg, hsl(220,26%,12%) 0%, hsl(220,26%,16%) 100%);
+            border-radius: var(--radius-2xl);
+            padding: var(--spacing-xl) var(--spacing-2xl);
             margin-bottom: var(--spacing-xl);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            border: 2px solid var(--gray-200);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+            border: 1px solid rgba(255,255,255,0.08);
             display: flex;
             justify-content: space-between;
             align-items: center;
             transition: all var(--transition-base);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-header::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: rgba(74,222,128,0.05);
+            pointer-events: none;
         }
 
         .profile-header:hover {
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-            border-color: var(--primary-200);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+            border-color: rgba(74,222,128,0.2);
         }
 
         .profile-avatar-wrapper {
@@ -180,10 +194,11 @@
         }
 
         .profile-info h1 {
-            margin: 0 0 var(--spacing-md) 0;
-            color: var(--dark-900);
+            margin: 0;
+            color: #ffffff;
             font-size: var(--font-size-3xl);
             font-weight: 800;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
 
         .profile-meta {
@@ -247,27 +262,29 @@
         }
 
         .btn-primary {
-            background: var(--primary-500);
-            color: var(--white);
-            border-color: var(--primary-500);
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+            color: #0f1a0f;
+            border-color: transparent;
+            font-weight: 700;
+            letter-spacing: 0.3px;
         }
 
         .btn-primary:hover {
-            background: var(--primary-600);
-            border-color: var(--primary-600);
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            box-shadow: 0 6px 20px rgba(74,222,128,0.35);
         }
 
         .btn-secondary {
-            background: var(--white);
-            color: var(--dark-700);
-            border-color: var(--gray-300);
+            background: transparent;
+            color: rgba(255,255,255,0.75);
+            border-color: rgba(255,255,255,0.25);
         }
 
         .btn-secondary:hover {
-            background: var(--gray-100);
-            border-color: var(--dark-700);
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.5);
+            color: #fff;
             transform: translateY(-2px);
         }
 
@@ -612,7 +629,7 @@
 
                     <div style="display: flex; gap: var(--spacing-md); margin-top: var(--spacing-lg);">
                         <button type="submit" class="btn btn-primary">Зберегти</button>
-                        <button type="button" class="btn btn-secondary" id="cancelBtn" style="color:#fff;border-color:rgba(255,255,255,0.2);">Скасувати</button>
+                        <button type="button" class="btn btn-secondary" id="cancelBtn">Скасувати</button>
                     </div>
                 </form>
             </div>
