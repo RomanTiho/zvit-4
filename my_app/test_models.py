@@ -13,6 +13,7 @@ from my_app.models import (
     Match,
 )
 
+
 @pytest.mark.django_db
 class TestModels:
     def test_user_profile_creation(self):
@@ -28,29 +29,17 @@ class TestModels:
 
     def test_player_creation_and_rating(self):
         user = User.objects.create_user(username="player1", password="password")
-        player = Player.objects.create(
-            user=user,
-            position="FWD",
-            jersey_number=10
-        )
+        player = Player.objects.create(user=user, position="FWD", jersey_number=10)
         assert str(player) == "player1 - Нападник"
         assert player.calculate_rating() == Decimal("0.00")
 
     def test_player_stats_and_rating_update(self):
         user = User.objects.create_user(username="player2", password="password")
-        player = Player.objects.create(
-            user=user,
-            position="FWD",
-            jersey_number=9
-        )
+        player = Player.objects.create(user=user, position="FWD", jersey_number=9)
         stats = PlayerStats.objects.create(
-            player=player,
-            match_id=1,
-            goals=2,
-            shots_on_target=3,
-            minutes_played=90
+            player=player, match_id=1, goals=2, shots_on_target=3, minutes_played=90
         )
-        # Rating should be calculated: 
+        # Rating should be calculated:
         # Base(5.0) + Goals(2*1.0) + ShotsOnTarget(min(3*0.2, 1.5)=0.6) = 7.6
         assert stats.rating == Decimal("7.6")
         assert str(stats) == "player2 - Матч 1"
@@ -67,11 +56,12 @@ class TestModels:
 
     def test_upl_squad_cache(self):
         import django.utils.timezone as timezone
+
         cache = UPLSquadCache.objects.create(
             team_name="Dynamo Kyiv",
             api_team_id=123,
             squad_json=[{"id": 1, "name": "Player 1"}],
-            fetched_at=timezone.now()
+            fetched_at=timezone.now(),
         )
         assert "Dynamo Kyiv" in str(cache)
 
@@ -82,7 +72,7 @@ class TestModels:
             end_date="2025-12-31",
             format="Group + Knockout",
             max_teams=32,
-            location="Europe"
+            location="Europe",
         )
         assert str(tour) == "Champions League"
 
@@ -93,14 +83,14 @@ class TestModels:
             end_date="2025-12-31",
             format="Knockout",
             max_teams=16,
-            location="City"
+            location="City",
         )
         team = Team.objects.create(
             tournament=tour,
             name="FC Local",
             captain="John Doe",
             email="contact@local.fc",
-            phone="123456789"
+            phone="123456789",
         )
         assert str(team) == "FC Local (Local Cup)"
 
@@ -111,7 +101,7 @@ class TestModels:
             end_date="2025-12-31",
             format="Knockout",
             max_teams=16,
-            location="City 2"
+            location="City 2",
         )
         match = Match.objects.create(
             tournament=tour,
@@ -119,7 +109,7 @@ class TestModels:
             home_team="Team A",
             away_team="Team B",
             home_score=2,
-            away_score=1
+            away_score=1,
         )
         assert match.home_team == "Team A"
         assert match.home_score == 2

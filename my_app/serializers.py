@@ -159,7 +159,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         return None
 
     def get_player(self, obj):
-        if not hasattr(obj, 'player'):
+        if not hasattr(obj, "player"):
             return None
         player = obj.player
         request = self.context.get("request")

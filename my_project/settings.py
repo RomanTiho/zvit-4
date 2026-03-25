@@ -85,8 +85,10 @@ WSGI_APPLICATION = "my_project.wsgi.application"
 import sys
 import os
 
-is_testing = 'pytest' in sys.modules or 'test' in sys.argv
-default_engine = "django.db.backends.sqlite3" if is_testing else "django.db.backends.mysql"
+is_testing = "pytest" in sys.modules or "test" in sys.argv
+default_engine = (
+    "django.db.backends.sqlite3" if is_testing else "django.db.backends.mysql"
+)
 default_db_name = ":memory:" if is_testing else "footballhub"
 
 DB_ENGINE = os.environ.get("DB_ENGINE", default_engine)

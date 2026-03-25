@@ -12,7 +12,9 @@ class Player(models.Model):
         ("FWD", "Forward"),
     ]
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="backend_player")
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="backend_player"
+    )
     position = models.CharField(max_length=20, choices=POSITION_CHOICES)
     overall_rating = models.DecimalField(max_digits=4, decimal_places=2, default=0)
     matches_played = models.IntegerField(default=0)

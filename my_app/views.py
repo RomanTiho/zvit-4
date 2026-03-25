@@ -393,7 +393,7 @@ class ProfileViewSet(viewsets.ReadOnlyModelViewSet):
         """Отримати статистику гравця"""
         user = self.get_object()
 
-        if not hasattr(user, 'player'):
+        if not hasattr(user, "player"):
             return Response(
                 {"error": "Player profile not found"}, status=status.HTTP_404_NOT_FOUND
             )
