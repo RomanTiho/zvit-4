@@ -1,9 +1,12 @@
-import pytest
-from django.urls import reverse, path, include
-from django.contrib.auth.models import User
-from rest_framework.test import APIClient
 from decimal import Decimal
-from .models import Player, PlayerStats, PlayerRatingHistory
+
+from django.contrib.auth.models import User
+from django.urls import include, path, reverse
+
+import pytest
+from rest_framework.test import APIClient
+
+from .models import Player, PlayerRatingHistory, PlayerStats
 from .urls import router
 
 urlpatterns = [

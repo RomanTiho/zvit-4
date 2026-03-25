@@ -1,8 +1,10 @@
-import pytest
-from django.urls import reverse
-from rest_framework.test import APIClient
 from django.contrib.auth.models import User
-from my_app.models import Tournament, Team, Match, Player
+from django.urls import reverse
+
+import pytest
+from rest_framework.test import APIClient
+
+from my_app.models import Match, Player, Team, Tournament
 
 
 @pytest.fixture

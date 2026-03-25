@@ -82,8 +82,8 @@ WSGI_APPLICATION = "my_project.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-import sys
 import os
+import sys
 
 is_testing = "pytest" in sys.modules or "test" in sys.argv
 default_engine = (

@@ -1,16 +1,19 @@
-import pytest
 from decimal import Decimal
+
 from django.contrib.auth.models import User
+
+import pytest
+
 from my_app.models import (
-    UserProfile,
-    Player,
-    PlayerStats,
-    PlayerRatingHistory,
-    UPLSquadCache,
-    Tournament,
-    Team,
-    Standing,
     Match,
+    Player,
+    PlayerRatingHistory,
+    PlayerStats,
+    Standing,
+    Team,
+    Tournament,
+    UPLSquadCache,
+    UserProfile,
 )
 
 

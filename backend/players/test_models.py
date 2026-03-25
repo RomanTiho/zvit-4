@@ -1,7 +1,10 @@
-import pytest
 from decimal import Decimal
+
 from django.contrib.auth.models import User
-from .models import Player, PlayerStats, PlayerRatingHistory
+
+import pytest
+
+from .models import Player, PlayerRatingHistory, PlayerStats
 
 
 @pytest.mark.django_db
