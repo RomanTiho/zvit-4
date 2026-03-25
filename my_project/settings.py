@@ -81,19 +81,27 @@ WSGI_APPLICATION = "my_project.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+import sys
+import os
+
+is_testing = 'pytest' in sys.modules or 'test' in sys.argv
+default_engine = "django.db.backends.sqlite3" if is_testing else "django.db.backends.mysql"
+default_db_name = ":memory:" if is_testing else "footballhub"
+
+DB_ENGINE = os.environ.get("DB_ENGINE", default_engine)
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": "footballhub",
-        "USER": "root",
-        "PASSWORD": "1234",
-        "HOST": "localhost",
-        "PORT": "3306",
-        "OPTIONS": {
-            "charset": "utf8mb4",
-        },
+        "ENGINE": DB_ENGINE,
+        "NAME": os.environ.get("DB_NAME", default_db_name),
+        "USER": os.environ.get("DB_USER", "root"),
+        "PASSWORD": os.environ.get("DB_PASSWORD", "1234"),
+        "HOST": os.environ.get("DB_HOST", "localhost"),
+        "PORT": os.environ.get("DB_PORT", "3306"),
     }
 }
+
+if "mysql" in DB_ENGINE:
+    DATABASES["default"]["OPTIONS"] = {"charset": "utf8mb4"}
 
 
 # Password validation
