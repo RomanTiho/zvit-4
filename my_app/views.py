@@ -393,23 +393,23 @@ class ProfileViewSet(viewsets.ReadOnlyModelViewSet):
         """Отримати статистику гравця"""
         user = self.get_object()
 
-        try:
-            player = user.player
-            stats = PlayerRatingService.get_player_statistics(player)
-
-            return Response(
-                {
-                    "player_id": player.id,
-                    "position": player.position,
-                    "overall_rating": float(player.overall_rating),
-                    "matches_played": player.matches_played,
-                    "statistics": stats,
-                }
-            )
-        except Player.DoesNotExist:
+        if not hasattr(user, 'player'):
             return Response(
                 {"error": "Player profile not found"}, status=status.HTTP_404_NOT_FOUND
             )
+
+        player = user.player
+        stats = PlayerRatingService.get_player_statistics(player)
+
+        return Response(
+            {
+                "player_id": player.id,
+                "position": player.position,
+                "overall_rating": float(player.overall_rating),
+                "matches_played": player.matches_played,
+                "statistics": stats,
+            }
+        )
 
 
 class PlayerViewSet(viewsets.ModelViewSet):

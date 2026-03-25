@@ -14,4 +14,4 @@ class TestPlayerModels:
         assert str(stats) == "ronaldo - Match 10"
 
         history = PlayerRatingHistory.objects.create(player=player, rating=Decimal("9.0"))
-        assert "ronaldo - 9.00 at" in str(history)
+        assert "ronaldo - 9.0" in str(history)

@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "corsheaders",
     # Local apps
     "my_app",
+    "backend.players",
 ]
 
 MIDDLEWARE = [

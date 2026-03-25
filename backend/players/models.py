@@ -12,7 +12,7 @@ class Player(models.Model):
         ("FWD", "Forward"),
     ]
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="player")
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="backend_player")
     position = models.CharField(max_length=20, choices=POSITION_CHOICES)
     overall_rating = models.DecimalField(max_digits=4, decimal_places=2, default=0)
     matches_played = models.IntegerField(default=0)
@@ -20,6 +20,7 @@ class Player(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        app_label = "players"
         ordering = ["-overall_rating"]
 
     def __str__(self):
@@ -40,6 +41,7 @@ class PlayerStats(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        app_label = "players"
         ordering = ["-created_at"]
         verbose_name_plural = "Player Stats"
 
@@ -57,6 +59,7 @@ class PlayerRatingHistory(models.Model):
     recorded_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        app_label = "players"
         ordering = ["-recorded_at"]
         verbose_name_plural = "Player Rating History"
 

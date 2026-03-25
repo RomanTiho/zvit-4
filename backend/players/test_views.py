@@ -1,9 +1,14 @@
 import pytest
-from django.urls import reverse
+from django.urls import reverse, path, include
 from django.contrib.auth.models import User
 from rest_framework.test import APIClient
 from decimal import Decimal
 from .models import Player, PlayerStats, PlayerRatingHistory
+from .urls import router
+
+urlpatterns = [
+    path('', include(router.urls)),
+]
 
 @pytest.fixture
 def api_client():
@@ -15,6 +20,7 @@ def player_user():
     return Player.objects.create(user=user, position="MID", overall_rating=Decimal("7.5"))
 
 @pytest.mark.django_db
+@pytest.mark.urls(__name__)
 class TestPlayerViews:
     def test_list_players(self, api_client, player_user):
         url = reverse('player-list')

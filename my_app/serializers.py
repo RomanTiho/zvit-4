@@ -159,27 +159,26 @@ class UserProfileSerializer(serializers.ModelSerializer):
         return None
 
     def get_player(self, obj):
-        try:
-            player = obj.player
-            request = self.context.get("request")
-            avatar_url = None
-            if player.avatar:
-                avatar_url = (
-                    request.build_absolute_uri(player.avatar.url)
-                    if request
-                    else player.avatar.url
-                )
-
-            return {
-                "id": player.id,
-                "position": player.position,
-                "jersey_number": player.jersey_number,
-                "avatar": avatar_url,
-                "overall_rating": float(player.overall_rating),
-                "matches_played": player.matches_played,
-            }
-        except Player.DoesNotExist:
+        if not hasattr(obj, 'player'):
             return None
+        player = obj.player
+        request = self.context.get("request")
+        avatar_url = None
+        if player.avatar:
+            avatar_url = (
+                request.build_absolute_uri(player.avatar.url)
+                if request
+                else player.avatar.url
+            )
+
+        return {
+            "id": player.id,
+            "position": player.position,
+            "jersey_number": player.jersey_number,
+            "avatar": avatar_url,
+            "overall_rating": float(player.overall_rating),
+            "matches_played": player.matches_played,
+        }
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
