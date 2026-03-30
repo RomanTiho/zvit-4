@@ -61,7 +61,13 @@ async function initAuthNav() {
 
             if (window.location.pathname.includes('tournament-detail.html')) {
                 const registerBtn = document.getElementById('registerTeamBtn');
-                if (registerBtn) registerBtn.style.display = 'block';
+                if (registerBtn) {
+                    if (typeof currentTournament !== 'undefined' && currentTournament && currentTournament.status === 'completed') {
+                        registerBtn.style.display = 'none';
+                    } else {
+                        registerBtn.style.display = 'block';
+                    }
+                }
             }
         }
 

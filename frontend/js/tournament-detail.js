@@ -62,6 +62,11 @@ function renderTournamentHeader() {
     document.getElementById('tournamentFormat').textContent = getFormatName(currentTournament.format);
     document.getElementById('tournamentTeams').textContent =
         `${currentTournament.teams.length} / ${currentTournament.max_teams} команд`;
+
+    const registerBtn = document.getElementById('registerTeamBtn');
+    if (registerBtn && currentTournament.status === 'completed') {
+        registerBtn.style.display = 'none';
+    }
 }
 
 // ===== Render Overview Tab =====

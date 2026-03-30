@@ -21,6 +21,19 @@ class TeamSerializer(serializers.ModelSerializer):
         model = Team
         fields = "__all__"
 
+    def validate(self, attrs):
+        # Якщо створюється нова команда або змінюється турнір
+        tournament = attrs.get('tournament')
+        # Якщо оновлюється існуюча команда без зміни турніру
+        if not tournament and self.instance:
+            tournament = self.instance.tournament
+
+        if tournament and tournament.status == "completed":
+            raise serializers.ValidationError(
+                {"tournament": "Реєстрація неможлива: цей турнір вже завершено."}
+            )
+        return attrs
+
 
 class StandingSerializer(serializers.ModelSerializer):
     team_name = serializers.CharField(source="team.name", read_only=True)

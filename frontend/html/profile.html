@@ -873,17 +873,14 @@
         document.getElementById('editMode').addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const jerseyNumber = document.getElementById('editJerseyNumber').value;
             const data = {
                 email: document.getElementById('editEmail').value,
                 first_name: document.getElementById('editFirstName').value,
                 last_name: document.getElementById('editLastName').value,
-                position: document.getElementById('editPosition').value,
-                jersey_number: jerseyNumber ? parseInt(jerseyNumber) : null
             };
 
             try {
-                const response = await fetch('http://localhost:8001/api/auth/update_profile/', {
+                const response = await fetch(`${CONFIG.API_BASE_URL}/auth/update_profile/`, {
                     method: 'PUT',
                     headers: {
                         'Authorization': `Bearer ${sessionStorage.getItem('access_token')}`,

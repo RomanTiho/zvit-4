@@ -26,6 +26,35 @@ class TestViews:
         response = api_client.get("/api/tournaments/")
         assert response.status_code == 200
 
+    def test_completed_tournament_registration(self, api_client):
+        # Перевірка: не можна реєструвати команду у завершений турнір
+        user = User.objects.create_user(username="coachuser", password="pwd")
+        user.groups.create(name="Coach")
+        api_client.force_authenticate(user=user)
+        
+        tournament = Tournament.objects.create(
+            name="Completed Cup",
+            start_date=timezone.now().date(),
+            end_date=timezone.now().date(),
+            format="11v11",
+            max_teams=8,
+            location="Stadium",
+            status="completed"
+        )
+        
+        data = {
+            "name": "Late Team",
+            "captain": "Cap",
+            "email": "late@team.com",
+            "phone": "000",
+            "tournament": tournament.id,
+            "players_count": 11,
+            "player_roster": []
+        }
+        response = api_client.post('/api/teams/', data, format='json')
+        assert response.status_code == 400
+        assert "Реєстрація неможлива: цей турнір вже завершено." in str(response.data)
+
     def test_get_teams(self, api_client):
         tour = Tournament.objects.create(
             name="World Cup",
