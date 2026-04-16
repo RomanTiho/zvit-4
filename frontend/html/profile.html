@@ -462,7 +462,7 @@
                 <ul class="nav-links" id="mainNavLinks">
                     <li><a href="/index.html">Головна</a></li>
                     <li><a href="/tournaments.html">Турніри</a></li>
-                    <li><a href="/players.html">Рейтинг</a></li>
+
                     <li><a id="featuresLink" href="/index.html#features">Можливості</a></li>
                 </ul>
                 <div style="display: flex; gap: 1rem; align-items: center;" id="headerActions">
@@ -516,6 +516,7 @@
                 <input type="file" id="avatarInput" accept="image/*" style="display:none">
                 <div class="profile-info">
                     <h1 id="profileName">Завантаження...</h1>
+                    <div id="coachTeamName" style="color: #4ade80; font-weight: 700; font-size: 1.1rem; margin-top: 6px; display: none;"></div>
                 </div>
             </div>
             <div class="profile-actions">
@@ -737,6 +738,17 @@
                 document.getElementById('statCoachTournaments').textContent = data.tournaments;
                 document.getElementById('statCoachMatches').textContent = data.matches;
                 document.getElementById('statCoachWins').textContent = data.wins;
+
+                // Show team names
+                if (data.team_names && data.team_names.length > 0) {
+                    const teamNameEl = document.getElementById('coachTeamName');
+                    if (teamNameEl) {
+                        teamNameEl.style.display = 'block';
+                        // Get unique team names to display
+                        const uniqueTeams = [...new Set(data.team_names)];
+                        teamNameEl.innerHTML = `🛡️ Команда: ${uniqueTeams.join(', ')}`;
+                    }
+                }
 
                 // Show recent tournaments
                 if (data.recent_tournaments && data.recent_tournaments.length > 0) {

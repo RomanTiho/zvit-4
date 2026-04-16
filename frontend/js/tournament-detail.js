@@ -1,7 +1,6 @@
 // ===== Tournament Detail Page JavaScript =====
 
 let currentTournament = null;
-let playerRoster = [];
 
 // ===== Check if user is admin =====
 function isAdmin() {
@@ -313,8 +312,6 @@ function setupRegisterTeamModal() {
 
     const closeAndReset = () => {
         closeModal('registerTeamModal');
-        playerRoster = [];
-        renderPlayerRoster();
     };
 
     if (closeBtn) closeBtn.addEventListener('click', closeAndReset);
@@ -324,18 +321,11 @@ function setupRegisterTeamModal() {
     if (form) {
         form.addEventListener('submit', handleRegisterTeam);
     }
-
-    setupPlayerRosterInput();
 }
 
 // ===== Handle Team Registration =====
 async function handleRegisterTeam(e) {
     e.preventDefault();
-
-    if (playerRoster.length < 8) {
-        showError('Необхідно додати щонайменше 8 гравців до складу команди');
-        return;
-    }
 
     const teamData = {
         tournament: currentTournament.id,
@@ -343,8 +333,8 @@ async function handleRegisterTeam(e) {
         captain: document.getElementById('captainName').value,
         email: document.getElementById('captainEmail').value,
         phone: document.getElementById('captainPhone').value,
-        players_count: playerRoster.length,
-        player_roster: playerRoster
+        players_count: 11,
+        player_roster: ["Роман", "Олег", "Назар", "Максим", "Сергій", "Максим", "Роман", "Тарас", "Богдан", "Микола", "Любомир"]
     };
 
     try {
@@ -354,10 +344,8 @@ async function handleRegisterTeam(e) {
         if (!currentTournament.teams) currentTournament.teams = [];
         currentTournament.teams.push(response);
 
-        // Reset form, roster and close modal
+        // Reset form and close modal
         e.target.reset();
-        playerRoster = [];
-        renderPlayerRoster();
         closeModal('registerTeamModal');
 
         // Refresh display
@@ -405,73 +393,7 @@ function deleteTeam(teamId) {
     });
 }
 
-// ===== Player Roster Input (Form) =====
-function setupPlayerRosterInput() {
-    const addBtn = document.getElementById('addPlayerBtn');
-    const input = document.getElementById('playerNameInput');
-    if (!addBtn || !input) return;
 
-    addBtn.addEventListener('click', addPlayer);
-    input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            addPlayer();
-        }
-    });
-}
-
-function addPlayer() {
-    const input = document.getElementById('playerNameInput');
-    const name = input.value.trim();
-    if (!name) return;
-    if (playerRoster.length >= 25) {
-        showWarning('Максимум 25 гравців у складі');
-        return;
-    }
-    if (playerRoster.map(n => n.toLowerCase()).includes(name.toLowerCase())) {
-        showWarning('Такий гравець вже доданий до складу');
-        return;
-    }
-    playerRoster.push(name);
-    input.value = '';
-    input.focus();
-    renderPlayerRoster();
-}
-
-function removePlayer(index) {
-    playerRoster.splice(index, 1);
-    renderPlayerRoster();
-}
-
-function renderPlayerRoster() {
-    const list = document.getElementById('playerRosterList');
-    const label = document.getElementById('playerCountLabel');
-    if (!list) return;
-
-    const count = playerRoster.length;
-    if (label) {
-        const enough = count >= 8;
-        label.textContent = count === 0 ? '(мінімум 8)' : `(${count} гравців${enough ? ' ✓' : ', потрібно ще ' + (8 - count)})`;
-        label.style.color = enough ? 'var(--success)' : 'var(--dark-500)';
-    }
-
-    if (count === 0) {
-        list.innerHTML = '<div class="roster-empty">Додайте щонайменше 8 гравців</div>';
-        return;
-    }
-
-    list.innerHTML = playerRoster.map((name, i) => `
-        <div class="roster-form-item">
-            <span class="roster-num">${i + 1}</span>
-            <span class="roster-name">${name}</span>
-            <button type="button" class="roster-remove-btn" onclick="removePlayer(${i})" title="Видалити">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path d="M9 3L3 9M3 3L9 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                </svg>
-            </button>
-        </div>
-    `).join('');
-}
 
 // ===== Initialize Tournament Detail Page =====
 document.addEventListener('DOMContentLoaded', async () => {

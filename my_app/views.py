@@ -373,6 +373,7 @@ class AuthViewSet(viewsets.ViewSet):
         return Response(
             {
                 "teams": team_count,
+                "team_names": team_names,
                 "tournaments": tournament_count,
                 "matches": match_count,
                 "wins": wins,
