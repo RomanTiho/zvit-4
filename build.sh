@@ -49,3 +49,9 @@ if not User.objects.filter(username=username).exists():
 else:
     print(f'Суперкористувач {username!r} вже існує.')
 "
+
+# якщо є dump файл у репозиторії
+if [ -f Football_data.json ]; then
+  echo "📥 Loading initial data..."
+  python manage.py loaddata Football_data.json || echo "⚠️ Data already loaded or failed"
+fi
