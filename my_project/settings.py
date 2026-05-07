@@ -83,6 +83,7 @@ WSGI_APPLICATION = "my_project.wsgi.application"
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 import os
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 import sys
 
 is_testing = "pytest" in sys.modules or "test" in sys.argv
@@ -147,7 +148,6 @@ STATICFILES_DIRS = [
     BASE_DIR / "frontend",
 ]
 
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
