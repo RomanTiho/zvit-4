@@ -56,16 +56,27 @@
 #   python manage.py loaddata Football_data.json || echo "⚠️ Data already loaded or failed"
 # fi
 
-#!/usr/bin/env bash
-set -o errexit
+# #!/usr/bin/env bash
+# set -o errexit
 
-echo ">>> Встановлення залежностей..."
+# echo ">>> Встановлення залежностей..."
+# pip install -r requirements.txt
+
+# echo ">>> Збір статичних файлів..."
+# python manage.py collectstatic --no-input
+
+# echo ">>> Застосування міграцій..."
+# python manage.py migrate
+
+# echo ">>> Деплой успішний! (Дані та адміна створимо пізніше)"
+
+#!/usr/bin/env bash
+
+# Встановлюємо залежності
 pip install -r requirements.txt
 
-echo ">>> Збір статичних файлів..."
+# Збираємо статику
 python manage.py collectstatic --no-input
 
-echo ">>> Застосування міграцій..."
+# Міграції
 python manage.py migrate
-
-echo ">>> Деплой успішний! (Дані та адміна створимо пізніше)"
