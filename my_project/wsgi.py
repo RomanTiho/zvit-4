@@ -15,6 +15,5 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "my_project.settings.base")
 
 application = get_wsgi_application()
 
-User = get_user_model()
-if not User.objects.filter(username="admin").exists():
-    User.objects.create_superuser("admin", "admin@example.com", "admin")
+# if not User.objects.filter(username="admin").exists():
+#     User.objects.create_superuser("admin", "admin@example.com", "admin")

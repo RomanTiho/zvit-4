@@ -1,0 +1,16 @@
+[
+{
+  "model": "auth.group",
+  "fields": {
+    "name": "coach",
+    "permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$600000$9b5uU8dQcXFCiae9IwhqqW$zcJq042IlNl9gVhauhf+gymwvw7rBH1sq7i42ZkVqgw=",
+    "last_login": "2026-04-29T17:11:03.083Z",
+    "is_superuser": true,
+    "username": "Roman",
+    "first_name": 
