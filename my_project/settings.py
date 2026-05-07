@@ -97,7 +97,8 @@ STATICFILES_DIRS = [BASE_DIR / "frontend"]
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # Налаштування WhiteNoise для стиснення статики
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+if not DEBUG:
+    STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
