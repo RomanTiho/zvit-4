@@ -10,7 +10,7 @@ services:
     name: my_project
     runtime: python
     buildCommand: './build.sh'
-    startCommand: 'gunicorn my_project.asgi:application -k uvicorn.workers.UvicornWorker'
+    startCommand: 'gunicorn my_project.wsgi:application'
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -21,4 +21,4 @@ services:
       - key: WEB_CONCURRENCY
         value: 4
       - key: DJANGO_SETTINGS_MODULE
-        value: my_project.settings.prod
+        value: my_project.settings
